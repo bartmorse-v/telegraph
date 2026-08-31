@@ -1,59 +1,78 @@
 # Matter Insight extractor
 
-Turns a closed legal case file into a **de-identified Matter Insight** — the only artifact permitted to cross into the content pipeline.
+Turns a closed legal case file into two artifacts that can safely leave the vault:
 
-This is v1: a local CLI. It exists to answer one question before any infrastructure gets built — *does extraction plus adversarial scrubbing actually produce something both safe and editorially useful?* Everything else (storage, queueing, multi-tenancy, Sanity) waits until that answer is yes.
+1. **A redacted narrative** — the matter retold in full, at length, with every identifier replaced by a stable token. This is the durable asset. It is what you re-read in a year to write an angle nobody has thought of yet.
+2. **A matter insight** — the structured index over that narrative, including an inventory of every article the matter can support.
+
+The source PDF is deleted once processed.
+
+This is v1: a local CLI. It exists to answer one question before any infrastructure gets built — *does this produce something both safe and re-mineable?* Storage, queueing, multi-tenancy and Sanity all wait until that answer is yes.
 
 ## Why it is not called an anonymizer
 
-"Anonymization" is a term of art implying irreversibility, and this process is not that. It is **de-identification with an attorney review gate**. The distinction matters when you write the client agreement — promising anonymization is a promise you cannot keep, and a sophisticated legal buyer will know it.
+"Anonymization" is a term of art implying irreversibility, and this is not that. It is **de-identification with an attorney review gate**. The distinction matters in a client agreement: promising anonymization is a promise you cannot keep, and a sophisticated legal buyer will know it.
 
 ## Run it
 
+Clone to **your own machine** — not a shared or remote environment — because the input is privileged material.
+
 ```bash
+git clone https://github.com/bartmorse-v/telegraph.git
+cd telegraph
+git checkout claude/arvo-blog-generation-research-ncfz85
 npm install
-npm run extract -- ./samples/matter-01.pdf
+
+export ANTHROPIC_API_KEY=...        # or: ant auth login
+npm run extract -- ~/matters/BC-0114.pdf
 ```
 
 Output lands in `out/<name>/`:
 
-| File | Purpose |
+| File | What it is |
 |---|---|
-| `insight.json` | The de-identified record. The only thing downstream stages may read. |
+| `narrative.json` | The full redacted retelling. The durable asset. |
+| `insight.json` | Structured index + the angle inventory. |
 | `scrub.json` | Structured findings from the adversarial pass. |
-| `report.md` | What a human editor actually reads. |
+| `report.md` | What a human actually reads. Start here. |
 
 Exit codes: `0` clean · `1` needs review · `2` blocked · `3` error.
 
-Credentials resolve from the environment — `ANTHROPIC_API_KEY`, or an `ant auth login` profile. Do not hardcode a key.
+## Working with real case files
+
+Real closed matters are better test material than synthetic ones, provided the firm has authorized this use. Three rules:
+
+- **Never commit them.** `.gitignore` blocks `samples/*.pdf` and `out/`, but the real protection is keeping them outside the repo directory entirely.
+- **Never paste them into a chat, issue, or ticket.** Including into a Claude session. The pipeline exists so that the file is read exactly once, by one process, on your machine.
+- **Share the output, not the input.** `report.md` is de-identified by construction and is the thing worth discussing.
+
+That last rule doubles as the test. If `report.md` is safe to paste somewhere public, de-identification worked. If it is not, you have found a bug worth fixing before the next matter — read the verdict first and describe the finding categories rather than pasting the file.
+
+### What to look at first
+
+**The angle count, and whether the angles are genuinely distinct.** Fourteen angles that are three real questions in fourteen phrasings is a failure, not a success — and it is the failure mode that would quietly wreck the business model. Be sceptical here early.
+
+Then: does `supporting_insight` on each angle say something a general article could not? "Statutes of limitation are important" is worthless. "The limitations clock and the insurer's internal review window are unrelated, and waiting for the review to conclude can forfeit the claim" is an article.
 
 ## How it works
 
-**Stage A — `extract.ts`.** Uploads the PDF via the Files API, extracts against a Zod schema using structured outputs, then deletes the uploaded copy in a `finally`. The raw document's lifetime is the lifetime of the extraction.
+**Stage 1 — `redactDocument`.** Uploads the PDF, retells the matter in full with identifiers tokenized and timing expressed relatively ("eleven days after the collision", never a date), then deletes the uploaded copy in a `finally`. The instruction to *retell, not summarize* is load-bearing: detail dropped here is gone permanently.
 
-**Stage B — `scrub.ts`.** A second call that sees **only the extracted JSON** — never the document, filename, or client name. This isolation is the point: the threat model is a reader who has the published article and nothing else, so the reviewer must be in that same position. Given the source, it would rate the output safer than it is.
+No token-to-value mapping is stored anywhere. `[CLIENT]` is consistent within one document so the narrative reads coherently, but there is no key back to a real name — persisting one would build exactly the re-identification database this design exists to avoid.
 
-The scrub reasons about **combinations** separately from individual fields, because that is where real re-identification happens. A county, a quarter, and an uncommon injury are each harmless alone and frequently identify exactly one person together.
+**Stage 2 — `buildInsight`.** Reads the narrative, never the document, and enumerates every article angle the matter supports. Targets 8–15 for a substantial matter.
 
-### Two design decisions worth knowing
+**Stage 3 — `scrubMatter`.** Adversarial re-identification check that sees only what survives — never the document, filename, or client name. That isolation matches the real threat model: a reader with the published article and nothing else. It reasons about identifying **combinations** separately from individual fields, which is where re-identification actually happens — a small county, a quarter, and an uncommon injury are each harmless alone and routinely identify one person together.
 
-**The schema is a control, not just a data shape.** There is no field in which a name, address, docket number, exact date, or dollar amount can be stored. Time is coarsened to year + quarter; geography stops at county; outcomes are categories, never amounts. If the model has nowhere to put an identifier, the most common leak path closes by construction.
+### Two things worth knowing
 
-**Source pages are self-reported.** Structured outputs and the citations feature are mutually exclusive at the API level — sending both returns a 400. Schema conformance won, because a malformed insight breaks the pipeline while an imprecise page number does not. A separate citations-enabled grounding pass is the planned v2 addition.
+**The schema is a control.** There is no field capable of holding a name, address, docket number, exact date, or dollar amount. Time coarsens to year + quarter, geography stops at county, outcomes are categories rather than figures. If the model has nowhere to put an identifier, the most common leak path closes by construction.
 
-## Test documents
-
-Do **not** put real client files in `samples/` — `.gitignore` blocks `*.pdf` there, but the better protection is not creating the situation. Start with synthetic matters you write yourself: they let you verify the scrub catches things, because you know exactly what you planted.
-
-Write three or four covering the failure modes that matter:
-
-1. **Clean native PDF, common matter.** Baseline — should extract well and scrub clean.
-2. **Identifier-dense.** Names, an address, a docket number, a settlement figure, exact dates. The scrub must catch every one. If it does not, stop and fix before going further.
-3. **Combination risk, no direct identifiers.** No names anywhere, but a rare occupation plus a small county plus a specific quarter. This is the case that separates a real de-identification gate from a regex.
-4. **Degraded scan.** Skewed OCR, a fax header, handwriting. Should degrade honestly into `low_confidence_areas` rather than inventing content.
+**The narrative is the riskier artifact.** The specificity that keeps it re-mineable is the same specificity that re-identifies people. It gets the same scrutiny as the insight, and in production it should stay in the vault — drafting reads the insight plus one angle's extract, never the whole narrative at once.
 
 ## Open decisions
 
-- **Practice-area enum** in `schema.ts` is a placeholder spanning common firm types. Narrow it to the first client's actual areas — a tight enum measurably improves extraction.
-- **`out/` is not a store.** v1 writes to disk. Where insights actually live is a decision for once this is proven.
-- **Attestation gate.** No matter should reach this tool before the firm has attested it is closed, unsealed, and cleared. Not yet built; it belongs upstream of extraction.
+- **Practice-area enum** in `schema.ts` spans common firm types. Narrow it to Barton Cerjak's actual areas — a tight enum measurably improves extraction.
+- **Structured outputs and citations are mutually exclusive** at the API level (sending both returns a 400). Schema conformance won. A separate citations-enabled grounding pass to verify claims against the source is the planned addition.
+- **`out/` is not a store.** Where insights live is a decision for once this is proven.
+- **The attestation gate is not built.** No matter should reach this tool before the firm has attested it is closed, unsealed, and cleared. It belongs upstream of extraction, and it is the next thing to build.

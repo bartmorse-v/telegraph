@@ -1,9 +1,9 @@
-node_modules/
-out/
+!.env.example
+# Never commit source case files.
 *.local
 .env
 .env.*
-!.env.example
-# Never commit source case files.
-samples/*.pdf
 design/attorney-workspace.html
+node_modules/
+out/
+samples/*.pdf
