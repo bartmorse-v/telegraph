@@ -23,9 +23,19 @@ cd telegraph
 git checkout claude/arvo-blog-generation-research-ncfz85
 npm install
 
-export ANTHROPIC_API_KEY=...        # or: ant auth login
-npm run extract -- ~/matters/BC-0114.pdf
+echo 'ANTHROPIC_API_KEY=sk-ant-...' > .env     # gitignored
+npm run extract -- ~/matters/BC-0114/
 ```
+
+**Point it at a folder, one folder per matter.** A matter is normally several
+documents — pleadings, correspondence, medical records, the settlement — and
+they only make sense read together. Every PDF in the folder goes into a single
+pass and produces one narrative and one angle inventory.
+
+Running the files separately instead would produce several disconnected
+narratives and several overlapping inventories: a large angle count made of
+the same few questions asked repeatedly. A lone PDF still works — it is just a
+single-document matter.
 
 Output lands in `out/<name>/`:
 

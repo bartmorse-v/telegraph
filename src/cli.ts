@@ -4,7 +4,7 @@ import "dotenv/config";
 import Anthropic from "@anthropic-ai/sdk";
 import fs from "node:fs";
 import path from "node:path";
-import { redactDocument, buildInsight, type Usage } from "./extract.js";
+import { redactMatter, buildInsight, type Usage } from "./extract.js";
 import { scrubMatter, stableStringify } from "./scrub.js";
 import type { MatterInsight, RedactedNarrative, ScrubReport } from "./schema.js";
 
@@ -20,29 +20,60 @@ import type { MatterInsight, RedactedNarrative, ScrubReport } from "./schema.js"
 
 const EXIT = { clean: 0, needsReview: 1, blocked: 2, error: 3 } as const;
 
+/** Guards against pointing this at a whole document management system. */
+const MAX_FILES = 40;
+
+/**
+ * One matter in, one matter out. A directory is a matter whose documents are
+ * read together; a lone PDF is a single-document matter. Files are sorted so
+ * reruns produce the same prompt and hit cache.
+ */
+function collectMatterFiles(target: string): string[] {
+  if (fs.statSync(target).isDirectory()) {
+    return fs
+      .readdirSync(target)
+      .filter((f) => /\.pdf$/i.test(f) && !f.startsWith("."))
+      .sort()
+      .map((f) => path.join(target, f));
+  }
+  return [target];
+}
+
 async function main(): Promise<number> {
-  const pdfPath = process.argv[2];
-  if (!pdfPath) {
-    console.error("usage: npm run extract -- <path-to-pdf>");
+  const target = process.argv[2];
+  if (!target) {
+    console.error("usage: npm run extract -- <matter-folder-or-pdf>");
     return EXIT.error;
   }
-  if (!fs.existsSync(pdfPath)) {
-    console.error(`No such file: ${pdfPath}`);
+  if (!fs.existsSync(target)) {
+    console.error(`No such file or folder: ${target}`);
     return EXIT.error;
   }
 
-  const slug = path.basename(pdfPath).replace(/\.pdf$/i, "").replace(/[^a-z0-9-_]/gi, "_");
+  const files = collectMatterFiles(target);
+  if (files.length === 0) {
+    console.error(`No PDFs found in ${target}`);
+    return EXIT.error;
+  }
+  if (files.length > MAX_FILES) {
+    console.error(
+      `${files.length} PDFs in ${target} — more than ${MAX_FILES}. That is usually a folder of matters rather than one matter; split it into a folder per matter.`,
+    );
+    return EXIT.error;
+  }
+
+  const totalMb = files.reduce((n, f) => n + fs.statSync(f).size, 0) / 1_000_000;
+  const slug = path.basename(target).replace(/\.pdf$/i, "").replace(/[^a-z0-9-_]/gi, "_");
   const outDir = path.join("out", slug);
   fs.mkdirSync(outDir, { recursive: true });
 
   const client = new Anthropic();
 
-  // Deliberately generic. A filename like "Delgado-v-Progressive.pdf" would
-  // leak two party names into the prompt before redaction even begins.
-  const documentLabel = "Closed matter file";
-
-  console.log(`Redacting   ${pdfPath}`);
-  const { narrative, usage: rUsage } = await redactDocument(client, pdfPath, documentLabel);
+  console.log(
+    `Redacting   ${files.length} document${files.length === 1 ? "" : "s"} · ${totalMb.toFixed(1)} MB · read as one matter`,
+  );
+  for (const f of files) console.log(`            ${path.basename(f)}`);
+  const { narrative, usage: rUsage } = await redactMatter(client, files);
   fs.writeFileSync(path.join(outDir, "narrative.json"), stableStringify(narrative));
   console.log(`  ${logUsage(rUsage)} · ${wordCount(narrative.narrative)} words retold`);
 
@@ -56,7 +87,7 @@ async function main(): Promise<number> {
   fs.writeFileSync(path.join(outDir, "scrub.json"), stableStringify(report));
   console.log(`  ${logUsage(sUsage)}`);
 
-  fs.writeFileSync(path.join(outDir, "report.md"), renderReport(pdfPath, narrative, insight, report));
+  fs.writeFileSync(path.join(outDir, "report.md"), renderReport(files, narrative, insight, report));
 
   console.log(`\n${summarize(insight, report)}`);
   console.log(`Written to  ${outDir}/`);
@@ -88,7 +119,7 @@ function summarize(insight: MatterInsight, report: ScrubReport): string {
 
 /** What a human editor actually reads. */
 function renderReport(
-  sourcePath: string,
+  sourceFiles: string[],
   narrative: RedactedNarrative,
   insight: MatterInsight,
   report: ScrubReport,
@@ -96,7 +127,7 @@ function renderReport(
   const L: string[] = [];
 
   L.push(`# Matter review`, "");
-  L.push(`- Source: \`${path.basename(sourcePath)}\``);
+  L.push(`- Source: ${sourceFiles.length} document${sourceFiles.length === 1 ? "" : "s"}, read as one matter`);
   L.push(`- Verdict: **${report.verdict}**`);
   L.push(`- Practice area: ${insight.practice_area}`);
   L.push(
