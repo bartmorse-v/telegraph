@@ -6,3 +6,4 @@ out/
 !.env.example
 # Never commit source case files.
 samples/*.pdf
+design/attorney-workspace.html

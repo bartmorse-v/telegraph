@@ -1,0 +1,28 @@
+{
+  "artboards": [
+    { "file": "SignIn.dc.html",        "x": 0,    "y": 0,    "w": 1440, "h": 900, "title": "Sign in" },
+    { "file": "Main.dc.html",          "x": 1540, "y": 0,    "w": 1440, "h": 900, "title": "Needs you (home)" },
+    { "file": "AddMatters.dc.html",    "x": 3080, "y": 0,    "w": 1440, "h": 900, "title": "Add matters + attestation" },
+    { "file": "MatterLibrary.dc.html", "x": 0,    "y": 1040, "w": 1440, "h": 900, "title": "Matter library + angle ledger" },
+    { "file": "MatterDetail.dc.html",  "x": 1540, "y": 1040, "w": 1440, "h": 900, "title": "Matter detail + angle inventory" },
+    { "file": "ArticleReview.dc.html", "x": 3080, "y": 1040, "w": 1440, "h": 900, "title": "Article review" }
+  ],
+  "annotations": [
+    {
+      "id": "home-is-a-queue",
+      "x": 1540, "y": -150, "w": 420,
+      "text": "Home is a queue, not a file browser.\n\nUploading is occasional; approving is weekly. The screen an attorney lands on should show what is waiting on them and nothing else."
+    },
+    {
+      "id": "gate-cannot-be-skipped",
+      "x": 3080, "y": -150, "w": 420,
+      "text": "The attestation is in the upload flow, not a settings page.\n\nOne action covers a batch so it stays fast, but processing cannot start without it. This record is what protects both of you."
+    },
+    {
+      "id": "angle-ledger",
+      "x": 0, "y": -150, "w": 420,
+      "text": "The angle ledger (bottom left) is the product promise made countable: 4 of 14 used.\n\nIt is also the renewal conversation — a firm can see unused inventory it already paid to create."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

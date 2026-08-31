@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@600&family=Public+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: "Public Sans", system-ui, sans-serif; background: #FBFAF8; color: #1A1A18; }
+    a { color: #6E2B2B; } a:hover { color: #4E1D1D; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="width: 1440px; height: 900px; display: grid; grid-template-columns: 1fr 1fr; background: #FBFAF8;">
+
+  <!-- left: the form -->
+  <div style="display: flex; flex-direction: column; justify-content: center; padding: 0 96px; background: #FFFFFF; border-right: 1px solid #E4E1DA;">
+    <div style="max-width: 400px;">
+      <div style="font-family: Spectral, Georgia, serif; font-weight: 600; font-size: 22px; letter-spacing: -0.01em; margin-bottom: 40px;">Telegraph</div>
+
+      <h1 style="font-family: Spectral, Georgia, serif; font-size: 34px; font-weight: 600; line-height: 1.15; letter-spacing: -0.015em; margin: 0 0 12px;">Review and approve your firm's content</h1>
+      <p style="font-size: 15px; line-height: 1.6; color: #6B6862; margin: 0 0 34px;">Sign in with your firm email. We'll send a link — there's no password to remember or reset.</p>
+
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px;">
+        <label style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #6B6862;">Firm email</label>
+        <div style="border: 1px solid #C9C5BC; background: #FFFFFF; padding: 11px 13px; font-size: 15px; color: #1A1A18; border-radius: 3px;">mcerjak@bartoncerjak.com</div>
+      </div>
+
+      <div style="background: #6E2B2B; color: #FFFFFF; font-size: 15px; font-weight: 500; padding: 12px 20px; border-radius: 3px; text-align: center; margin-bottom: 22px;">Email me a sign-in link</div>
+
+      <div style="display: flex; gap: 9px; align-items: flex-start; color: #9C978E; font-size: 12.5px; line-height: 1.55;">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" style="flex-shrink: 0; margin-top: 1px;"><rect x="3" y="7" width="10" height="7" rx="1"/><path d="M5.5 7V5a2.5 2.5 0 015 0v2"/></svg>
+        <span>Access is limited to addresses your firm has authorized. Ask your administrator to add a colleague.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- right: what this is -->
+  <div style="display: flex; flex-direction: column; justify-content: center; padding: 0 88px; background: #FBFAF8;">
+    <div style="max-width: 400px;">
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: #6E2B2B; margin-bottom: 24px;">What you'll do here</div>
+
+      <div style="display: flex; flex-direction: column; gap: 26px;">
+
+        <div style="display: grid; grid-template-columns: 26px minmax(0,1fr); gap: 14px;">
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #6E2B2B; padding-top: 1px;">01</div>
+          <div>
+            <div style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Confirm which matters are eligible</div>
+            <div style="font-size: 14px; line-height: 1.55; color: #6B6862;">Nothing is read until an attorney attests the matter is closed and cleared. That record is kept permanently.</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 26px minmax(0,1fr); gap: 14px;">
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #6E2B2B; padding-top: 1px;">02</div>
+          <div>
+            <div style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Review drafts before anything publishes</div>
+            <div style="font-size: 14px; line-height: 1.55; color: #6B6862;">Every article arrives with its confidentiality and accuracy checks already run, and the matter it came from named.</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 26px minmax(0,1fr); gap: 14px;">
+          <div style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; color: #6E2B2B; padding-top: 1px;">03</div>
+          <div>
+            <div style="font-size: 15px; font-weight: 600; margin-bottom: 4px;">Approve under your own byline</div>
+            <div style="font-size: 14px; line-height: 1.55; color: #6B6862;">Nothing goes live without a named attorney's approval, recorded with the version it applied to.</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="margin-top: 42px; padding-top: 22px; border-top: 1px solid #E4E1DA; font-size: 13px; line-height: 1.6; color: #9C978E;">
+        Case files are deleted once processed. Only the de-identified record is retained.
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,20 +1,28 @@
 import Anthropic from "@anthropic-ai/sdk";
+import type { Usage } from "./extract.js";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { ScrubReportSchema, type MatterInsight, type ScrubReport } from "./schema.js";
+import {
+  ScrubReportSchema,
+  type MatterInsight,
+  type RedactedNarrative,
+  type ScrubReport,
+} from "./schema.js";
 
 const MODEL = "claude-opus-5";
 
 /**
- * Stage B: adversarial re-identification check.
+ * Adversarial re-identification check over both surviving artifacts.
  *
- * This function is deliberately given ONLY the extracted insight. It never
- * receives the file id, the document, the filename, or the client name.
+ * Given ONLY what survives extraction — never the source document, filename,
+ * or client name. That isolation matches the real threat model: a reader who
+ * has the published content and nothing else. Shown the source, this pass
+ * would reason from information the attacker lacks and rate the output safer
+ * than it is. Keep the signature narrow so it cannot be widened by accident.
  *
- * That is the whole point. The threat model is "someone reads the published
- * article and works out whose case it was", and that reader does not have the
- * case file either. Showing this pass the source would let it reason from
- * information the attacker lacks, and it would rate the output safer than it
- * is. Keep the signature narrow so this cannot be widened by accident.
+ * The narrative is the higher-risk artifact of the two. It deliberately retains
+ * narrative specificity in order to stay re-mineable, and specificity is what
+ * re-identifies people. It gets the same scrutiny as the insight, and it is the
+ * reason the narrative never leaves the vault to reach a drafting call whole.
  */
 const SCRUB_SYSTEM = `You are a privacy adversary reviewing a de-identified summary of a closed legal matter before it is used to write public content.
 
@@ -45,12 +53,12 @@ Be strict. A false positive costs an editor two minutes. A false negative is a c
 
 export interface ScrubResult {
   report: ScrubReport;
-  usage: { input_tokens: number; output_tokens: number };
+  usage: Usage;
 }
 
-export async function scrubInsight(
+export async function scrubMatter(
   client: Anthropic,
-  insight: MatterInsight,
+  artifacts: { narrative: RedactedNarrative; insight: MatterInsight },
 ): Promise<ScrubResult> {
   const response = await client.messages.parse({
     model: MODEL,
@@ -69,7 +77,7 @@ export async function scrubInsight(
         content: [
           {
             type: "text",
-            text: `Review this extracted Matter Insight:\n\n${stableStringify(insight)}`,
+            text: `Review both artifacts. Flag findings in either.\n\n## Redacted narrative\n\n${stableStringify(artifacts.narrative)}\n\n## Matter insight\n\n${stableStringify(artifacts.insight)}`,
           },
         ],
       },
@@ -88,6 +96,7 @@ export async function scrubInsight(
     usage: {
       input_tokens: response.usage.input_tokens,
       output_tokens: response.usage.output_tokens,
+      cache_read_input_tokens: response.usage.cache_read_input_tokens ?? null,
     },
   };
 }

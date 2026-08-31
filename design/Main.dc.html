@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@600&family=Public+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+    body { margin: 0; font-family: "Public Sans", system-ui, sans-serif; background: #FBFAF8; color: #1A1A18; }
+    a { color: #6E2B2B; } a:hover { color: #4E1D1D; }
+    * { box-sizing: border-box; }
+  </style>
+</helmet>
+
+<div style="display: flex; width: 1440px; height: 900px; background: #FBFAF8;">
+
+  <!-- rail -->
+  <div style="width: 224px; flex-shrink: 0; border-right: 1px solid #E4E1DA; background: #FFFFFF; display: flex; flex-direction: column;">
+    <div style="padding: 22px 20px 18px; border-bottom: 1px solid #EFEDE7;">
+      <div style="font-family: Spectral, Georgia, serif; font-weight: 600; font-size: 17px; letter-spacing: -0.01em;">Telegraph</div>
+      <div style="font-family: 'IBM Plex Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: #9C978E; margin-top: 4px;">Barton Cerjak</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 1px; padding: 12px 10px;">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 3px; background: #F5EBE9; color: #6E2B2B; font-size: 14px; font-weight: 500;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M8 1.5v3M8 11.5v3M1.5 8h3M11.5 8h3M8 5.5a2.5 2.5 0 100 5 2.5 2.5 0 000-5z"/></svg>
+        Needs you
+        <span style="margin-left: auto; font-family: 'IBM Plex Mono', monospace; font-size: 11px; background: #6E2B2B; color: #FFF; padding: 1px 6px; border-radius: 8px;">4</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 3px; color: #4A4740; font-size: 14px;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 4.5h12v8.5H2zM2 4.5L3.2 2.5h4l1 2"/></svg>
+        Matters
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 3px; color: #4A4740; font-size: 14px;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 2h10v12H3zM5.5 5.5h5M5.5 8h5M5.5 10.5h3"/></svg>
+        Articles
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 3px; color: #4A4740; font-size: 14px;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 8l3.5 3.5L14 3.5"/></svg>
+        Published
+      </div>
+    </div>
+    <div style="margin-top: auto; padding: 16px 20px; border-top: 1px solid #EFEDE7;">
+      <div style="font-size: 13px; font-weight: 500;">M. Cerjak</div>
+      <div style="font-size: 12px; color: #9C978E;">Partner · GA Bar 448201</div>
+    </div>
+  </div>
+
+  <!-- main -->
+  <div style="flex-grow: 1; display: flex; flex-direction: column; overflow: hidden;">
+    <div style="padding: 26px 36px 20px; border-bottom: 1px solid #E4E1DA; background: #FFFFFF;">
+      <h1 style="font-family: Spectral, Georgia, serif; font-size: 26px; font-weight: 600; margin: 0 0 4px; letter-spacing: -0.01em;">Needs you</h1>
+      <p style="margin: 0; font-size: 14px; color: #6B6862;">Four items are waiting. Nothing else requires your attention today.</p>
+    </div>
+
+    <div style="padding: 28px 36px; display: flex; flex-direction: column; gap: 30px; overflow: hidden;">
+
+      <!-- articles awaiting review -->
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: baseline; gap: 10px;">
+          <h2 style="font-size: 13px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: #6B6862; margin: 0;">Articles awaiting your review</h2>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #9C978E;">3</span>
+        </div>
+
+        <div style="border: 1px solid #E4E1DA; background: #FFFFFF; display: flex; flex-direction: column;">
+
+          <div style="display: grid; grid-template-columns: minmax(0,1fr) 190px 128px 96px; gap: 20px; align-items: center; padding: 16px 20px; border-bottom: 1px solid #EFEDE7;">
+            <div>
+              <div style="font-size: 15px; font-weight: 500; margin-bottom: 3px;">Should I accept the insurance company's first offer?</div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #9C978E;">BC-0114 · adjuster-first-offer</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 3px;">
+              <span style="font-size: 12px; color: #6B6862;">All 7 checks passed</span>
+              <div style="display: flex; gap: 2px;">
+                <span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span>
+              </div>
+            </div>
+            <div style="font-size: 12px; color: #9C978E;">Drafted 2 days ago</div>
+            <div style="display: flex; justify-content: flex-end;">
+              <div style="background: #6E2B2B; color: #FFF; font-size: 13px; font-weight: 500; padding: 7px 16px; border-radius: 3px;">Review</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: minmax(0,1fr) 190px 128px 96px; gap: 20px; align-items: center; padding: 16px 20px; border-bottom: 1px solid #EFEDE7;">
+            <div>
+              <div style="font-size: 15px; font-weight: 500; margin-bottom: 3px;">How do medical liens affect what I actually take home?</div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #9C978E;">BC-0114 · medical-liens-net-recovery</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 3px;">
+              <span style="font-size: 12px; color: #8A6318;">1 check flagged — voice</span>
+              <div style="display: flex; gap: 2px;">
+                <span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #D9B45F;"></span>
+              </div>
+            </div>
+            <div style="font-size: 12px; color: #9C978E;">Drafted 2 days ago</div>
+            <div style="display: flex; justify-content: flex-end;">
+              <div style="background: #6E2B2B; color: #FFF; font-size: 13px; font-weight: 500; padding: 7px 16px; border-radius: 3px;">Review</div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: minmax(0,1fr) 190px 128px 96px; gap: 20px; align-items: center; padding: 16px 20px;">
+            <div>
+              <div style="font-size: 15px; font-weight: 500; margin-bottom: 3px;">What happens at a Fulton County mediation?</div>
+              <div style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #9C978E;">BC-0109 · mediation-what-to-expect</div>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 3px;">
+              <span style="font-size: 12px; color: #6B6862;">All 7 checks passed</span>
+              <div style="display: flex; gap: 2px;">
+                <span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span><span style="width: 22px; height: 3px; background: #3F5D3A;"></span>
+              </div>
+            </div>
+            <div style="font-size: 12px; color: #9C978E;">Drafted 4 days ago</div>
+            <div style="display: flex; justify-content: flex-end;">
+              <div style="background: #6E2B2B; color: #FFF; font-size: 13px; font-weight: 500; padding: 7px 16px; border-radius: 3px;">Review</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- attestation -->
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: baseline; gap: 10px;">
+          <h2 style="font-size: 13px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: #6B6862; margin: 0;">Matters awaiting your attestation</h2>
+          <span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #9C978E;">1</span>
+        </div>
+
+        <div style="border: 1px solid #E4E1DA; border-left: 3px solid #6E2B2B; background: #FFFFFF; padding: 18px 20px; display: grid; grid-template-columns: minmax(0,1fr) 210px; gap: 24px; align-items: center;">
+          <div>
+            <div style="font-size: 15px; font-weight: 500; margin-bottom: 4px;">4 files uploaded and held</div>
+            <div style="font-size: 13px; color: #6B6862; line-height: 1.5;">Nothing is processed until you confirm these matters are closed and cleared for this use. Files are held encrypted until then.</div>
+          </div>
+          <div style="display: flex; justify-content: flex-end;">
+            <div style="background: #6E2B2B; color: #FFF; font-size: 13px; font-weight: 500; padding: 8px 16px; border-radius: 3px;">Confirm eligibility</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 9px; color: #9C978E; font-size: 13px; padding-top: 2px;">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="8" cy="8" r="6.2"/><path d="M5.4 8l1.8 1.8 3.4-3.6"/></svg>
+        Six articles are scheduled and need nothing from you.
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
