@@ -5,6 +5,7 @@
   "type": "module",
   "description": "Extracts de-identified Matter Insights from closed legal case files.",
   "scripts": {
+    "setup": "node scripts/setup.mjs",
     "extract": "tsx src/cli.ts",
     "typecheck": "tsc --noEmit"
   },

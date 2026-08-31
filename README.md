@@ -15,7 +15,7 @@ This is v1: a local CLI. It exists to answer one question before any infrastruct
 
 ## Run it
 
-Clone to **your own machine** — not a shared or remote environment — because the input is privileged material.
+Clone to **your own machine** — not a shared or remote environment — because the input is privileged material. Run these **one line at a time**; pasting a block of them together is how quoting breaks.
 
 ```bash
 git clone https://github.com/bartmorse-v/telegraph.git
@@ -23,7 +23,7 @@ cd telegraph
 git checkout claude/arvo-blog-generation-research-ncfz85
 npm install
 
-echo 'ANTHROPIC_API_KEY=sk-ant-...' > .env     # gitignored
+npm run setup                        # prompts for your API key
 npm run extract -- ~/matters/BC-0114/
 ```
 
@@ -55,6 +55,7 @@ Real closed matters are better test material than synthetic ones, provided the f
 - **Never commit them.** `.gitignore` blocks `samples/*.pdf` and `out/`, but the real protection is keeping them outside the repo directory entirely.
 - **Never paste them into a chat, issue, or ticket.** Including into a Claude session. The pipeline exists so that the file is read exactly once, by one process, on your machine.
 - **Share the output, not the input.** `report.md` is de-identified by construction and is the thing worth discussing.
+- **Never paste your API key anywhere either.** `npm run setup` exists so the key never passes through shell quoting or your shell history. If a key is ever exposed, revoke it at console.anthropic.com rather than hoping.
 
 That last rule doubles as the test. If `report.md` is safe to paste somewhere public, de-identification worked. If it is not, you have found a bug worth fixing before the next matter — read the verdict first and describe the finding categories rather than pasting the file.
 
