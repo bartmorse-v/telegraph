@@ -1,3 +1,6 @@
+// Loads .env if present, so the key can live in a file instead of being
+// re-exported into every new shell. A missing .env is a no-op.
+import "dotenv/config";
 import Anthropic from "@anthropic-ai/sdk";
 import fs from "node:fs";
 import path from "node:path";
