@@ -48,6 +48,11 @@ Output lands in `out/<name>/`:
 
 Exit codes: `0` clean · `1` needs review · `2` blocked · `3` error.
 
+If your key is **identity-linked**, requests must also name a workspace or the
+API returns a 400. `npm run setup` asks for the id; find it in the Console
+address bar — `platform.claude.com/workspaces/<THIS PART>/...`. Keys that are
+not identity-linked ignore it, so setting it is harmless either way.
+
 ## Working with real case files
 
 Real closed matters are better test material than synthetic ones, provided the firm has authorized this use. Three rules:

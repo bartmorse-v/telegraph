@@ -1,11 +1,11 @@
 // Loads .env if present, so the key can live in a file instead of being
 // re-exported into every new shell. A missing .env is a no-op.
 import "dotenv/config";
-import Anthropic from "@anthropic-ai/sdk";
 import fs from "node:fs";
 import path from "node:path";
 import { redactMatter, buildInsight, type Usage } from "./extract.js";
 import { scrubMatter, stableStringify } from "./scrub.js";
+import { createClient, explainError } from "./client.js";
 import type { MatterInsight, RedactedNarrative, ScrubReport } from "./schema.js";
 
 /**
@@ -67,7 +67,7 @@ async function main(): Promise<number> {
   const outDir = path.join("out", slug);
   fs.mkdirSync(outDir, { recursive: true });
 
-  const client = new Anthropic();
+  const client = createClient();
 
   console.log(
     `Redacting   ${files.length} document${files.length === 1 ? "" : "s"} · ${totalMb.toFixed(1)} MB · read as one matter`,
@@ -198,6 +198,6 @@ function renderReport(
 main()
   .then((code) => process.exit(code))
   .catch((err: unknown) => {
-    console.error(err instanceof Error ? err.message : String(err));
+    console.error(`\n${explainError(err)}`);
     process.exit(EXIT.error);
   });
