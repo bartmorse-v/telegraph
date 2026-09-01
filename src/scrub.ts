@@ -1,107 +1,76 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { finishOrExplain, type Usage } from "./extract.js";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import {
-  ScrubReportSchema,
-  type MatterInsight,
-  type RedactedNarrative,
-  type ScrubReport,
-} from "./schema.js";
+import { CorpusReviewSchema, type CorpusReview, type RedactedDocument } from "./schema.js";
+import { finishOrExplain, type Usage } from "./extract.js";
 
 const MODEL = "claude-opus-5";
 
 /**
- * Adversarial re-identification check over both surviving artifacts.
+ * Asks one narrow question: did any identifier survive substitution?
  *
- * Given ONLY what survives extraction — never the source document, filename,
- * or client name. That isolation matches the real threat model: a reader who
- * has the published content and nothing else. Shown the source, this pass
- * would reason from information the attacker lacks and rate the output safer
- * than it is. Keep the signature narrow so it cannot be widened by accident.
+ * Not whether a motivated reader could work out whose matter this is. That is a
+ * question about a published article — what a reader would actually see — and
+ * it is answered at publish time, where it can be answered properly. Asking it
+ * of a full corpus produces a permanent "blocked" that means nothing, because a
+ * complete case file is always identifiable to someone holding the case file.
  *
- * The narrative is the higher-risk artifact of the two. It deliberately retains
- * narrative specificity in order to stay re-mineable, and specificity is what
- * re-identifies people. It gets the same scrutiny as the insight, and it is the
- * reason the narrative never leaves the vault to reach a drafting call whole.
+ * Findings describe what was missed; they never quote it. That keeps the review
+ * shareable when the corpus is not.
  */
-const SCRUB_SYSTEM = `You are a privacy adversary reviewing a de-identified summary of a closed legal matter before it is used to write public content.
+const REVIEW_SYSTEM = `You are checking whether a redaction pass over legal documents actually worked.
 
-Your job is to find anything that could identify a party, a witness, or the specific matter. Assume the reader is motivated and has: public court dockets, local news archives, social media, obituaries, and knowledge of which firm published the content.
+You are looking for identifiers that survived substitution: a person or company named where a token should be, an address, a specific date, a dollar figure, a docket or account number, a phone number or email.
 
-Flag as high severity:
-- Any name, address, street, intersection, neighborhood, or city
-- Any docket, case, claim, or policy number
-- Any dollar amount
-- Any date more precise than year and quarter
-- Any employer, business, or institution identified specifically
+Do NOT flag:
+- County, state, or court level — these are kept deliberately
+- Statutes, rules, regulations, published case citations
+- Procedural terms, deadlines, standards of review
+- Generic role words: the plaintiff, the insurer, the treating physician
+- Tokens themselves
 
-Flag as medium severity:
-- Distinctive details that narrow the field sharply on their own: an unusual injury or medical condition, a rare occupation, an unusual accident mechanism, an uncommon procedural history, reference to a locally notable event
-- Small-population geography combined with any other specific
+Describe what you find; never quote it. Say "a company name appears in the jurisdiction section" rather than reproducing the name — this report has to remain shareable when the documents are not.
 
-Flag as low severity:
-- Detail that is safe alone but should be watched if the article accumulates more
+Also judge substitution quality: were tokens used consistently within a document, and was anything summarized that should have been reproduced in full? A redaction pass that quietly condensed the document has failed even if no identifier survived.
 
-Then reason about COMBINATIONS separately. Individually safe facts frequently identify someone together — a county with a small population, plus a quarter, plus an uncommon injury, is often a single identifiable person. This is the failure mode that matters most and the one field-by-field review misses.
+Verdict: "blocked" if any high-severity identifier survived, "needs_review" for medium or low only, "clean" if substitution held throughout.`;
 
-Set the verdict:
-- "blocked" if any high-severity finding exists, or if a motivated reader could identify the matter
-- "needs_review" if only medium or low findings exist
-- "clean" only if you found nothing and the combination analysis is negative
-
-Be strict. A false positive costs an editor two minutes. A false negative is a confidentiality breach that ends a law firm's relationship with its client and exposes it to bar discipline.`;
-
-export interface ScrubResult {
-  report: ScrubReport;
+export interface ReviewResult {
+  review: CorpusReview;
   usage: Usage;
 }
 
-export async function scrubMatter(
+export async function reviewCorpus(
   client: Anthropic,
-  artifacts: { narrative: RedactedNarrative; insight: MatterInsight },
-): Promise<ScrubResult> {
+  documents: RedactedDocument[],
+): Promise<ReviewResult> {
+  const corpus = documents
+    .map((d, i) => `## Document ${i + 1} — ${d.document_type}\n\n${d.content}`)
+    .join("\n\n");
+
   const stream = client.messages.stream({
     model: MODEL,
     max_tokens: 32000,
-    system: [
-      { type: "text", text: SCRUB_SYSTEM, cache_control: { type: "ephemeral" } },
-    ],
+    system: [{ type: "text", text: REVIEW_SYSTEM, cache_control: { type: "ephemeral" } }],
     thinking: { type: "adaptive" },
-    output_config: {
-      format: zodOutputFormat(ScrubReportSchema),
-      effort: "high",
-    },
-    messages: [
-      {
-        role: "user",
-        content: [
-          {
-            type: "text",
-            text: `Review both artifacts. Flag findings in either.\n\n## Redacted narrative\n\n${stableStringify(artifacts.narrative)}\n\n## Matter insight\n\n${stableStringify(artifacts.insight)}`,
-          },
-        ],
-      },
-    ],
+    output_config: { format: zodOutputFormat(CorpusReviewSchema), effort: "high" },
+    messages: [{ role: "user", content: [{ type: "text", text: corpus }] }],
   });
 
   let chars = 0;
   stream.on("text", (t) => {
-    const before = chars;
     chars += t.length;
-    if (Math.floor(chars / 4000) > Math.floor(before / 4000)) process.stdout.write(".");
   });
   const response = await finishOrExplain(stream, () => chars);
-  if (chars >= 4000) process.stdout.write("\n");
 
   if (!response.parsed_output) {
-    // Fail closed. An unparseable scrub is not a pass.
+    // Fail closed. An unparseable review is not a pass.
     throw new Error(
-      `Scrub did not return a parseable report (stop_reason: ${response.stop_reason}). Treating as blocked.`,
+      `Review returned nothing parseable (stop_reason: ${response.stop_reason}). Treating as blocked.`,
     );
   }
 
   return {
-    report: response.parsed_output,
+    review: response.parsed_output,
     usage: {
       input_tokens: response.usage.input_tokens,
       output_tokens: response.usage.output_tokens,
@@ -110,11 +79,7 @@ export async function scrubMatter(
   };
 }
 
-/**
- * Key-sorted JSON. Two reasons: reruns over the same insight hit prompt cache
- * instead of writing a new entry, and stored insights hash stably for the
- * audit log.
- */
+/** Key-sorted JSON, so stored artifacts hash stably for the audit log. */
 export function stableStringify(value: unknown): string {
   return JSON.stringify(sortKeys(value), null, 2);
 }
