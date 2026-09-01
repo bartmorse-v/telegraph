@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { usePoll } from "./use-poll";
 
 /**
  * The count on "Needs you" is the whole point of the home screen: uploading is
@@ -13,25 +14,14 @@ export function Nav() {
   const pathname = usePathname();
   const [waiting, setWaiting] = useState<number | null>(null);
 
-  useEffect(() => {
-    let live = true;
-    const load = async () => {
-      try {
-        const res = await fetch("/api/review-queue");
-        if (!res.ok) return;
-        const data = (await res.json()) as { count: number };
-        if (live) setWaiting(data.count);
-      } catch {
-        /* the badge is a convenience; a failed poll should not surface */
-      }
-    };
-    void load();
-    const timer = setInterval(load, 5000);
-    return () => {
-      live = false;
-      clearInterval(timer);
-    };
-  }, [pathname]);
+  usePoll(async () => {
+    try {
+      const res = await fetch("/api/review-queue");
+      if (res.ok) setWaiting(((await res.json()) as { count: number }).count);
+    } catch {
+      /* the badge is a convenience; a failed poll should not surface */
+    }
+  }, 20000);
 
   const active = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);

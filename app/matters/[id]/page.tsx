@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { usePoll } from "../../use-poll";
 import type { Article, MatterMeta } from "../../../src/store";
 import type { CorpusReview, MatterProfile } from "../../../src/schema";
 import { GateBadge } from "../../page";
@@ -26,11 +27,11 @@ export default function MatterPage() {
     if (res.ok) setData((await res.json()) as Detail);
   }, [id]);
 
-  useEffect(() => {
-    void load();
-    const timer = setInterval(load, 5000);
-    return () => clearInterval(timer);
-  }, [load]);
+  // Only while redaction is actually running. Once the matter settles there is
+  // nothing to watch, and the page stops asking.
+  const working =
+    data === null || data.matter.status === "processing" || data.matter.status === "attested";
+  usePoll(load, working ? 4000 : null);
 
   async function writeNext() {
     setWriting(true);
@@ -62,7 +63,6 @@ export default function MatterPage() {
   }
 
   const { matter, profile, review, articles, documents } = data;
-  const working = matter.status === "processing" || matter.status === "attested";
   const words = documents.reduce((n, d) => n + d.words, 0);
 
   return (

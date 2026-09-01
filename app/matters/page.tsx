@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { usePoll } from "../use-poll";
 import type { MatterMeta } from "../../src/store";
 
 const STATUS: Record<MatterMeta["status"], [string, string]> = {
@@ -16,15 +17,14 @@ const STATUS: Record<MatterMeta["status"], [string, string]> = {
 export default function Matters() {
   const [matters, setMatters] = useState<MatterMeta[] | null>(null);
 
-  useEffect(() => {
-    const load = async () => {
+  const working = matters?.some((m) => m.status === "processing" || m.status === "attested");
+  usePoll(
+    async () => {
       const res = await fetch("/api/matters");
       if (res.ok) setMatters((await res.json()) as MatterMeta[]);
-    };
-    void load();
-    const timer = setInterval(load, 5000);
-    return () => clearInterval(timer);
-  }, []);
+    },
+    matters === null || working ? 4000 : null,
+  );
 
   return (
     <>

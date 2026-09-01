@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { usePoll } from "./use-poll";
 import type { Article, MatterMeta } from "../src/store";
 
 interface Queue {
@@ -13,17 +14,15 @@ interface Queue {
 export default function Home() {
   const [queue, setQueue] = useState<Queue | null>(null);
 
-  useEffect(() => {
-    const load = async () => {
+  // Processing takes minutes, so the screen refreshes itself while a matter is
+  // in flight — and stops once nothing is, rather than polling forever.
+  usePoll(
+    async () => {
       const res = await fetch("/api/review-queue");
       if (res.ok) setQueue((await res.json()) as Queue);
-    };
-    void load();
-    // Processing takes minutes, so the home screen refreshes itself rather than
-    // asking someone to keep reloading to find out whether it finished.
-    const timer = setInterval(load, 5000);
-    return () => clearInterval(timer);
-  }, []);
+    },
+    queue === null || queue.processing.length > 0 ? 4000 : 20000,
+  );
 
   const total = queue ? queue.drafts.length + queue.attention.length : 0;
 
