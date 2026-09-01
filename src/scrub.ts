@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { Usage } from "./extract.js";
+import { finishOrExplain, type Usage } from "./extract.js";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import {
   ScrubReportSchema,
@@ -62,7 +62,7 @@ export async function scrubMatter(
 ): Promise<ScrubResult> {
   const stream = client.messages.stream({
     model: MODEL,
-    max_tokens: 16000,
+    max_tokens: 32000,
     system: [
       { type: "text", text: SCRUB_SYSTEM, cache_control: { type: "ephemeral" } },
     ],
@@ -90,7 +90,7 @@ export async function scrubMatter(
     chars += t.length;
     if (Math.floor(chars / 4000) > Math.floor(before / 4000)) process.stdout.write(".");
   });
-  const response = await stream.finalMessage();
+  const response = await finishOrExplain(stream, () => chars);
   if (chars >= 4000) process.stdout.write("\n");
 
   if (!response.parsed_output) {
