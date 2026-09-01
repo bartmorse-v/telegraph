@@ -4,21 +4,22 @@ import fs from "node:fs";
 import path from "node:path";
 import { RedactedDocumentSchema, type RedactedDocument } from "./schema";
 import { finishOrExplain, type Usage } from "./extract";
+import { PAGES_PER_CHUNK, pool, splitIntoChunks } from "./pdf";
 
 const MODEL = "claude-opus-5";
+
+/** At most this many model calls in flight at once, across the whole matter. */
+const CONCURRENCY = 3;
 
 /**
  * Redaction has exactly one job: reproduce the document with identifiers
  * replaced. It decides nothing about what matters.
  *
- * The previous design asked one call to remove identifiers AND judge what was
+ * An earlier design asked one call to remove identifiers AND judge what was
  * worth keeping. Those pull against each other — "keep what matters" has no
  * correct answer, so it drifted toward transcription, and transcription carries
  * identifiers with it. Separating them gives redaction a right answer, which is
  * what makes it checkable.
- *
- * Everything downstream reasons over the redacted corpus, as many times as it
- * likes, without ever touching the source again.
  */
 const REDACTION_SYSTEM = `You reproduce legal documents with every identifier replaced, and change nothing else.
 
@@ -53,33 +54,45 @@ export interface DocumentResult {
   usage: Usage;
 }
 
-/**
- * One call per document. Bounded output — a document cannot produce more than
- * roughly its own length — which is what stops a large matter from running off
- * the end of the token ceiling the way a merged retelling did.
- */
-export async function redactOneDocument(
+const emptyUsage = (): Usage => ({
+  input_tokens: 0,
+  output_tokens: 0,
+  cache_read_input_tokens: 0,
+});
+
+const addUsage = (a: Usage, b: Usage): Usage => ({
+  input_tokens: a.input_tokens + b.input_tokens,
+  output_tokens: a.output_tokens + b.output_tokens,
+  cache_read_input_tokens:
+    (a.cache_read_input_tokens ?? 0) + (b.cache_read_input_tokens ?? 0),
+});
+
+/** One model call over one PDF chunk. */
+async function redactChunk(
   client: Anthropic,
-  pdfPath: string,
-  position: number,
-  total: number,
+  bytes: Uint8Array,
+  label: string,
   onProgress: () => void,
-): Promise<DocumentResult> {
+): Promise<{ document: RedactedDocument; usage: Usage }> {
   const uploaded = await client.files.upload({
-    file: await toFile(fs.createReadStream(pdfPath), undefined, {
-      type: "application/pdf",
-    }),
+    file: await toFile(Buffer.from(bytes), "chunk.pdf", { type: "application/pdf" }),
   });
 
   try {
     const stream = client.messages.stream({
       model: MODEL,
-      max_tokens: 64000,
+      // The ceiling covers thinking as well as visible output. A reproduction
+      // is roughly as long as its source, so the budget has to hold both — an
+      // earlier run spent half of a 64k allowance thinking and was cut off
+      // mid-sentence with the substitution unfinished.
+      max_tokens: 128000,
       system: [
         { type: "text", text: REDACTION_SYSTEM, cache_control: { type: "ephemeral" } },
       ],
       thinking: { type: "adaptive" },
-      output_config: { format: zodOutputFormat(RedactedDocumentSchema), effort: "high" },
+      // Substitution is careful work but not hard reasoning. Lower effort
+      // leaves the budget for output, and costs less for the same result.
+      output_config: { format: zodOutputFormat(RedactedDocumentSchema), effort: "medium" },
       messages: [
         {
           role: "user",
@@ -87,9 +100,9 @@ export async function redactOneDocument(
             {
               type: "document",
               source: { type: "file", file_id: uploaded.id },
-              // Positional, never the filename: "Smith v Allstate.pdf" would put
-              // two party names in the prompt ahead of any redaction.
-              title: `Document ${position} of ${total}`,
+              // Positional, never the filename: "Smith v Allstate.pdf" would
+              // put two party names in the prompt ahead of any redaction.
+              title: label,
             },
             {
               type: "text",
@@ -109,7 +122,7 @@ export async function redactOneDocument(
     const response = await finishOrExplain(stream, () => chars);
 
     if (!response.parsed_output) {
-      throw new Error(`Document ${position} produced nothing parseable.`);
+      throw new Error(`${label} produced nothing parseable.`);
     }
     return {
       document: response.parsed_output,
@@ -129,31 +142,67 @@ export async function redactOneDocument(
 }
 
 /**
- * Documents run concurrently — they are independent, and a matter of twenty
- * filings should not take twenty times as long as one.
+ * One document, split into page ranges when it is too long to come back in a
+ * single response, then stitched into one record.
+ */
+export async function redactOneDocument(
+  client: Anthropic,
+  pdfPath: string,
+  position: number,
+  total: number,
+  onProgress: () => void,
+): Promise<DocumentResult> {
+  const bytes = new Uint8Array(fs.readFileSync(pdfPath));
+  const chunks = await splitIntoChunks(bytes);
+
+  const results = await pool(
+    CONCURRENCY,
+    chunks.map((chunk, i) => () =>
+      redactChunk(
+        client,
+        chunk,
+        chunks.length === 1
+          ? `Document ${position} of ${total}`
+          : `Document ${position} of ${total}, pages ${i * PAGES_PER_CHUNK + 1}-${(i + 1) * PAGES_PER_CHUNK}`,
+        onProgress,
+      ),
+    ),
+  );
+
+  const parts = results.map((r) => r.document);
+  const first = parts[0];
+  if (!first) throw new Error(`Document ${position} produced no output.`);
+
+  return {
+    document: {
+      schema_version: "1.0",
+      document_type: first.document_type,
+      content: parts.map((p) => p.content).join("\n\n"),
+      tokens_used: [...new Set(parts.flatMap((p) => p.tokens_used))],
+      illegible_sections: parts.flatMap((p) => p.illegible_sections),
+    },
+    usage: results.map((r) => r.usage).reduce(addUsage, emptyUsage()),
+  };
+}
+
+/**
+ * Documents are independent, so they run concurrently — but under one shared
+ * ceiling with their chunks, so a large matter does not become a rate-limited
+ * one.
  */
 export async function redactCorpus(
   client: Anthropic,
   pdfPaths: string[],
   onProgress: () => void,
 ): Promise<{ documents: RedactedDocument[]; usage: Usage }> {
-  const results = await Promise.all(
-    pdfPaths.map((p, i) =>
-      redactOneDocument(client, p, i + 1, pdfPaths.length, onProgress),
-    ),
+  const results = await pool(
+    CONCURRENCY,
+    pdfPaths.map((p, i) => () => redactOneDocument(client, p, i + 1, pdfPaths.length, onProgress)),
   );
 
   return {
     documents: results.map((r) => r.document),
-    usage: results.reduce<Usage>(
-      (acc, r) => ({
-        input_tokens: acc.input_tokens + r.usage.input_tokens,
-        output_tokens: acc.output_tokens + r.usage.output_tokens,
-        cache_read_input_tokens:
-          (acc.cache_read_input_tokens ?? 0) + (r.usage.cache_read_input_tokens ?? 0),
-      }),
-      { input_tokens: 0, output_tokens: 0, cache_read_input_tokens: 0 },
-    ),
+    usage: results.map((r) => r.usage).reduce(addUsage, emptyUsage()),
   };
 }
 

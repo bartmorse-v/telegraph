@@ -66,7 +66,7 @@ async function main(): Promise<number> {
   const client = createClient();
 
   console.log(
-    `Redacting   ${files.length} document${files.length === 1 ? "" : "s"} · ${totalMb.toFixed(1)} MB · one call each, in parallel`,
+    `Redacting   ${files.length} document${files.length === 1 ? "" : "s"} · ${totalMb.toFixed(1)} MB · split into page ranges where needed`,
   );
   for (const f of files) console.log(`            ${path.basename(f)}`);
 

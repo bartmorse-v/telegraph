@@ -107,10 +107,20 @@ speculating about content instead of indexing it.
 
 ## How it works
 
-**Redact — one call per document, run in parallel.** Each document is
-reproduced with identifiers replaced and nothing else changed, then the
-uploaded copy is deleted in a `finally`. Output is bounded by input length,
-which is what stops a large matter from running past the token ceiling.
+**Redact — page ranges, run under a concurrency ceiling.** Each document is
+reproduced with identifiers replaced and nothing else changed, then the uploaded
+copy is deleted in a `finally`.
+
+A reproduction is roughly as long as its source, and the model's output ceiling
+covers its thinking as well as its output — so a long filing cannot come back in
+one response at any setting. Documents over 30 pages are split locally into page
+ranges, redacted separately, and stitched back together. Splitting happens with
+a PDF library rather than by asking the model to respect a page range, so the
+result is deterministic and nothing is silently skipped.
+
+Redaction runs at medium effort: substitution is careful work but not hard
+reasoning, and leaving thinking room to the output is what keeps a long document
+from being cut off mid-sentence.
 
 No token-to-value mapping is stored anywhere. `[CLIENT]` is consistent within a
 document so it reads coherently, but there is no key back to a real name —
