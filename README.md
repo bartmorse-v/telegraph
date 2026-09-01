@@ -64,6 +64,14 @@ Real closed matters are better test material than synthetic ones, provided the f
 
 That last rule doubles as the test. If `report.md` is safe to paste somewhere public, de-identification worked. If it is not, you have found a bug worth fixing before the next matter — read the verdict first and describe the finding categories rather than pasting the file.
 
+### Diagnosing a blocked run
+
+A blocked report cannot be shared to ask for help — being blocked is precisely
+what makes it unsafe to paste. `npm run triage -- out/<folder>` prints the shape
+of the failure instead of its content: which fields leaked, in what category,
+how many, and how much the angle inventory overlaps itself. It never prints
+excerpts or the scrub's reasoning, since both quote the offending text.
+
 ### What to look at first
 
 **The angle count, and whether the angles are genuinely distinct.** Fourteen angles that are three real questions in fourteen phrasings is a failure, not a success — and it is the failure mode that would quietly wreck the business model. Be sceptical here early.
