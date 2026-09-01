@@ -162,3 +162,73 @@ export const CorpusReviewSchema = z.object({
 });
 
 export type CorpusReview = z.infer<typeof CorpusReviewSchema>;
+
+/* ------------------------------------------------------------------ */
+/* Article — written from the corpus, against the ledger              */
+/* ------------------------------------------------------------------ */
+
+export const ARTICLE_DEPTHS = ["pillar", "supporting", "quick_answer"] as const;
+
+export const DraftArticleSchema = z.object({
+  schema_version: z.literal("1.0"),
+  angle_id: z
+    .string()
+    .describe("Stable kebab-case slug for the question this answers. Goes on the ledger."),
+  headline: z
+    .string()
+    .describe("The H1: the question phrased the way a prospective client would search it."),
+  reader_situation: z
+    .string()
+    .describe("The situation someone is in when they search this. A circumstance, not a person."),
+  answer_block: z
+    .string()
+    .describe(
+      "40-60 words answering the headline directly, with no preamble. This is what gets extracted into AI summaries and cited by language models.",
+    ),
+  body: z
+    .string()
+    .describe(
+      "The article in markdown, starting after the answer block. H2 sections that each stand alone.",
+    ),
+  depth: z.enum(ARTICLE_DEPTHS),
+  drawn_from: z
+    .string()
+    .describe("What in this matter's corpus supports the article, in one sentence."),
+});
+
+export type DraftArticle = z.infer<typeof DraftArticleSchema>;
+
+/* ------------------------------------------------------------------ */
+/* Publish gate — asked of the article, not the vault                 */
+/* ------------------------------------------------------------------ */
+
+export const GATE_CHECKS = [
+  "re_identification",
+  "jurisdictional_accuracy",
+  "groundedness",
+  "advertising_compliance",
+  "advice_framing",
+  "structure",
+] as const;
+
+/**
+ * This is where the confidentiality question belongs. A reader sees the
+ * article and nothing else, so the reviewer is given the article and nothing
+ * else — not the corpus, not the matter reference. Given the source it would
+ * reason from information the reader lacks and rate the piece safer than it is.
+ */
+export const PublishGateSchema = z.object({
+  verdict: z.enum(["pass", "flag", "block"]),
+  checks: z.array(
+    z.object({
+      name: z.enum(GATE_CHECKS),
+      passed: z.boolean(),
+      severity: z.enum(["info", "warn", "block"]),
+      detail: z
+        .string()
+        .describe("What was checked and what was found. Never quote an identifier you found."),
+    }),
+  ),
+});
+
+export type PublishGate = z.infer<typeof PublishGateSchema>;

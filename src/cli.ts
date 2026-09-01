@@ -3,11 +3,11 @@
 import "dotenv/config";
 import fs from "node:fs";
 import path from "node:path";
-import { redactCorpus, scanForPatterns, corpusText, writeCorpus } from "./redact.js";
-import { buildProfile, type Usage } from "./extract.js";
-import { reviewCorpus, stableStringify } from "./scrub.js";
-import { createClient, explainError } from "./client.js";
-import type { CorpusReview, MatterProfile, RedactedDocument } from "./schema.js";
+import { redactCorpus, scanForPatterns, corpusText, writeCorpus } from "./redact";
+import { buildProfile, type Usage } from "./extract";
+import { reviewCorpus, stableStringify } from "./scrub";
+import { createClient, explainError } from "./client";
+import type { CorpusReview, MatterProfile, RedactedDocument } from "./schema";
 
 /**
  *   npm run extract -- ~/matters/BC-0114/     (a folder = one matter)

@@ -3,7 +3,11 @@
 *.local
 .env
 .env.*
+.next/
+data/
 design/attorney-workspace.html
+next-env.d.ts
 node_modules/
 out/
 samples/*.pdf
+tsconfig.tsbuildinfo

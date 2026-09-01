@@ -1,6 +1,7 @@
-# Matter Insight extractor
+# Telegraph
 
-Strips identifiers from a closed matter's documents and keeps the result.
+Turns a law firm's closed matters into publishable articles, without exposing a
+client.
 
 The **redacted corpus** is the product: each document reproduced with names,
 addresses, dates, amounts and case numbers replaced by tokens, and nothing else
@@ -11,7 +12,16 @@ A small **profile** indexes the corpus so a matter can be found in a list.
 
 Source PDFs are deleted once processed.
 
-This is v1: a local CLI. It exists to answer one question before any infrastructure gets built — *does this produce something both safe and re-mineable?* Storage, queueing, multi-tenancy and Sanity all wait until that answer is yes.
+Articles are written from the corpus one at a time, each choosing a question
+the documents answer that is **not already on the matter's ledger**. Nothing is
+predicted up front, so nothing duplicates: the writer can see what exists.
+
+Every article passes a publish gate before a person sees it, and no article
+publishes without a named attorney approving that exact version.
+
+**Everything runs on your machine.** Case files never reach infrastructure
+anyone else operates — they go to the Anthropic API to be redacted, and are
+deleted immediately afterward. Storage is the local filesystem under `data/`.
 
 ## Why it is not called an anonymizer
 
@@ -19,29 +29,40 @@ This is v1: a local CLI. It exists to answer one question before any infrastruct
 
 ## Run it
 
-Clone to **your own machine** — not a shared or remote environment — because the input is privileged material. Run these **one line at a time**; pasting a block of them together is how quoting breaks.
+Clone to **your own machine** — not a shared or remote environment — because the
+input is privileged material. Run these **one line at a time**; pasting a block
+of them together is how quoting breaks.
 
 ```bash
 git clone https://github.com/bartmorse-v/telegraph.git
 cd telegraph
 git checkout claude/arvo-blog-generation-research-ncfz85
 npm install
-
 npm run setup                        # prompts for your API key
-npm run extract -- ~/matters/BC-0114/
+npm run dev
 ```
 
-**Point it at a folder, one folder per matter.** A matter is normally several
-documents — pleadings, correspondence, medical records, the settlement — and
-they only make sense read together. Every PDF in the folder goes into a single
-pass and produces one narrative and one angle inventory.
+Then open **http://localhost:3000**.
 
-Running the files separately instead would produce several disconnected
-narratives and several overlapping inventories: a large angle count made of
-the same few questions asked repeatedly. A lone PDF still works — it is just a
-single-document matter.
+### Using it
 
-Output lands in `out/<name>/`:
+1. **Add a matter.** Upload every PDF for one closed matter together — they are
+   read as a single case. The eligibility attestation is part of this form and
+   cannot be skipped; it is checked again server-side, because the record is
+   what protects the firm.
+2. **Wait.** Redaction takes a few minutes. The page updates itself.
+3. **Write the next article.** Each one picks a question the documents answer
+   that is not already on the matter's ledger.
+4. **Review and approve.** The publish gate has already run. A blocking failure
+   cannot be approved past.
+
+One folder per matter. Pointing it at a folder holding *all* matters produces
+one incoherent case out of many.
+
+### Or from the terminal
+
+`npm run extract -- ~/matters/BC-0114/` runs redaction only, writing to
+`out/<name>/`:
 
 | Path | What it is |
 |---|---|
@@ -49,6 +70,8 @@ Output lands in `out/<name>/`:
 | `profile.json` | Index card over the corpus: practice area, venue, outcome, themes. |
 | `review.json` | Whether any identifier survived substitution. |
 | `report.md` | What a human actually reads. Start here. |
+
+The app stores the same things under `data/matters/<id>/`, plus articles.
 
 Exit codes: `0` clean · `1` needs review · `2` blocked · `3` error.
 

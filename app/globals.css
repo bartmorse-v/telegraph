@@ -1,0 +1,391 @@
+:root {
+  --paper: #fbfaf8;
+  --surface: #ffffff;
+  --surface-2: #f7f5f1;
+  --ink: #1a1a18;
+  --ink-2: #4a4740;
+  --muted: #6b6862;
+  --faint: #9c978e;
+  --rule: #e4e1da;
+  --rule-soft: #efede7;
+  --ox: #6e2b2b;
+  --ox-lo: #f5ebe9;
+  --good: #3f5d3a;
+  --warn: #8a6318;
+  --crit: #7a2823;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Public Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: var(--ox);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ox);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.mono {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+.serif {
+  font-family: Spectral, Georgia, serif;
+}
+
+/* ---------- shell ---------- */
+
+.shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.rail {
+  width: 224px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--rule);
+  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.brand {
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.brand-name {
+  font-family: Spectral, Georgia, serif;
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+}
+
+.brand-sub {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--faint);
+  margin-top: 4px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 12px 10px;
+}
+
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 3px;
+  color: var(--ink-2);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.nav a:hover {
+  background: var(--surface-2);
+}
+
+.nav a[data-active="true"] {
+  background: var(--ox-lo);
+  color: var(--ox);
+  font-weight: 500;
+}
+
+.count {
+  margin-left: auto;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 11px;
+  background: var(--ox);
+  color: #fff;
+  padding: 1px 6px;
+  border-radius: 8px;
+}
+
+main {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+.head {
+  padding: 26px 36px 20px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--surface);
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+h1 {
+  font-family: Spectral, Georgia, serif;
+  font-size: 26px;
+  font-weight: 600;
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+}
+
+.head p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.body {
+  padding: 28px 36px 64px;
+  max-width: 1100px;
+}
+
+h2 {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+
+/* ---------- panels, tables ---------- */
+
+.panel {
+  border: 1px solid var(--rule);
+  background: var(--surface);
+}
+
+.panel + .panel,
+.section + .section {
+  margin-top: 28px;
+}
+
+.row {
+  display: grid;
+  gap: 18px;
+  align-items: center;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--rule-soft);
+  text-decoration: none;
+  color: inherit;
+}
+
+.row:last-child {
+  border-bottom: none;
+}
+
+a.row:hover {
+  background: var(--surface-2);
+}
+
+.thead {
+  padding: 10px 20px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--rule);
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.empty {
+  padding: 44px 20px;
+  text-align: center;
+  color: var(--faint);
+  font-size: 14px;
+}
+
+/* ---------- controls ---------- */
+
+.btn {
+  display: inline-block;
+  background: var(--ox);
+  color: #fff;
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 3px;
+  border: 1px solid var(--ox);
+  text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.btn:hover {
+  background: #571f1f;
+}
+
+.btn[disabled] {
+  background: #d9d5cc;
+  border-color: #d9d5cc;
+  color: #8a857c;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink-2);
+  border-color: #c9c5bc;
+}
+
+.btn-ghost:hover {
+  background: var(--surface-2);
+}
+
+input[type="text"],
+textarea {
+  width: 100%;
+  border: 1px solid #c9c5bc;
+  background: var(--surface);
+  padding: 9px 12px;
+  font-size: 14.5px;
+  font-family: inherit;
+  color: var(--ink);
+  border-radius: 3px;
+}
+
+label {
+  display: block;
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+/* ---------- status ---------- */
+
+.pill {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 500;
+  padding: 2px 7px;
+  border-radius: 2px;
+  border: 1px solid currentColor;
+  white-space: nowrap;
+}
+
+.pill-good {
+  color: var(--good);
+}
+.pill-warn {
+  color: var(--warn);
+}
+.pill-crit {
+  color: var(--crit);
+}
+.pill-muted {
+  color: var(--muted);
+  border-color: #c9c5bc;
+}
+
+.note {
+  border-left: 2px solid var(--ox);
+  background: var(--surface);
+  padding: 14px 18px;
+  font-size: 14px;
+  color: var(--ink-2);
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.working {
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .working {
+    animation: none;
+  }
+}
+
+/* ---------- prose ---------- */
+
+.prose {
+  max-width: 68ch;
+}
+
+.prose h2 {
+  font-family: "Public Sans", sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  margin: 26px 0 8px;
+}
+
+.prose h3 {
+  font-size: 15.5px;
+  font-weight: 600;
+  margin: 20px 0 6px;
+}
+
+.prose p,
+.prose li {
+  font-size: 15.5px;
+  line-height: 1.65;
+}
+
+.prose table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+  margin: 16px 0;
+}
+
+.prose th,
+.prose td {
+  border: 1px solid var(--rule);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.prose th {
+  background: var(--surface-2);
+}

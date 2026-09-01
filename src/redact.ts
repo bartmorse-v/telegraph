@@ -2,8 +2,8 @@ import Anthropic, { toFile } from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import fs from "node:fs";
 import path from "node:path";
-import { RedactedDocumentSchema, type RedactedDocument } from "./schema.js";
-import { finishOrExplain, type Usage } from "./extract.js";
+import { RedactedDocumentSchema, type RedactedDocument } from "./schema";
+import { finishOrExplain, type Usage } from "./extract";
 
 const MODEL = "claude-opus-5";
 

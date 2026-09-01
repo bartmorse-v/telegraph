@@ -1,7 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { CorpusReviewSchema, type CorpusReview, type RedactedDocument } from "./schema.js";
-import { finishOrExplain, type Usage } from "./extract.js";
+import { CorpusReviewSchema, type CorpusReview, type RedactedDocument } from "./schema";
+import { finishOrExplain, type Usage } from "./extract";
 
 const MODEL = "claude-opus-5";
 

@@ -5,6 +5,9 @@
   "type": "module",
   "description": "Extracts de-identified Matter Insights from closed legal case files.",
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "setup": "node scripts/setup.mjs",
     "extract": "tsx src/cli.ts",
     "typecheck": "tsc --noEmit"
@@ -12,10 +15,16 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",
     "dotenv": "^17.4.2",
+    "marked": "^18.0.11",
+    "next": "^16.3.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "zod": "^4.5.4"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
     "tsx": "^4.19.0",
     "typescript": "^5.7.0"
   }

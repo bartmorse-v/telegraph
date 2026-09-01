@@ -1,6 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { MatterProfileSchema, type MatterProfile, type RedactedDocument } from "./schema.js";
+import { MatterProfileSchema, type MatterProfile, type RedactedDocument } from "./schema";
 
 const MODEL = "claude-opus-5";
 
