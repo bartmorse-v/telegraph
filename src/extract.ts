@@ -100,10 +100,11 @@ export async function redactMatter(
       title: `Matter document ${i + 1} of ${uploaded.length}`,
     }));
 
-    const response = await client.messages.parse({
+    const stream = client.messages.stream({
       model: MODEL,
-      // Generous: the narrative is meant to be long. The TS SDK scales its
-      // request timeout up for large max_tokens on non-streaming calls.
+      // Generous: the narrative is meant to be long. Streaming is what makes a
+      // ceiling this high legal — the SDK refuses a non-streaming request that
+      // could run past ten minutes.
       max_tokens: 32000,
       system: [
         { type: "text", text: REDACTION_SYSTEM, cache_control: { type: "ephemeral" } },
@@ -123,6 +124,15 @@ export async function redactMatter(
         },
       ],
     });
+
+    let chars = 0;
+    stream.on("text", (t) => {
+      const before = chars;
+      chars += t.length;
+      if (Math.floor(chars / 4000) > Math.floor(before / 4000)) process.stdout.write(".");
+    });
+    const response = await stream.finalMessage();
+    if (chars >= 4000) process.stdout.write("\n");
 
     if (!response.parsed_output) {
       throw new Error(
@@ -170,7 +180,7 @@ export async function buildInsight(
   client: Anthropic,
   narrative: RedactedNarrative,
 ): Promise<{ insight: MatterInsight; usage: Usage }> {
-  const response = await client.messages.parse({
+  const stream = client.messages.stream({
     model: MODEL,
     max_tokens: 32000,
     system: [{ type: "text", text: INSIGHT_SYSTEM, cache_control: { type: "ephemeral" } }],
@@ -188,6 +198,15 @@ export async function buildInsight(
       },
     ],
   });
+
+  let chars = 0;
+  stream.on("text", (t) => {
+    const before = chars;
+    chars += t.length;
+    if (Math.floor(chars / 4000) > Math.floor(before / 4000)) process.stdout.write(".");
+  });
+  const response = await stream.finalMessage();
+  if (chars >= 4000) process.stdout.write("\n");
 
   if (!response.parsed_output) {
     throw new Error(`Insight build returned nothing parseable (stop_reason: ${response.stop_reason}).`);

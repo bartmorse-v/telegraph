@@ -60,7 +60,7 @@ export async function scrubMatter(
   client: Anthropic,
   artifacts: { narrative: RedactedNarrative; insight: MatterInsight },
 ): Promise<ScrubResult> {
-  const response = await client.messages.parse({
+  const stream = client.messages.stream({
     model: MODEL,
     max_tokens: 16000,
     system: [
@@ -83,6 +83,15 @@ export async function scrubMatter(
       },
     ],
   });
+
+  let chars = 0;
+  stream.on("text", (t) => {
+    const before = chars;
+    chars += t.length;
+    if (Math.floor(chars / 4000) > Math.floor(before / 4000)) process.stdout.write(".");
+  });
+  const response = await stream.finalMessage();
+  if (chars >= 4000) process.stdout.write("\n");
 
   if (!response.parsed_output) {
     // Fail closed. An unparseable scrub is not a pass.
