@@ -20,7 +20,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const profile = getProfile(id);
   const documents = getCorpus(id);
 
-  if (!matter || !profile || documents.length === 0) {
+  if (!matter) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+  // Before the "not finished" check below: a deleted matter has no corpus by
+  // definition, and "still processing" would be a misleading thing to say
+  // about one.
+  if (matter.status === "deleted") {
+    return NextResponse.json({ error: "This matter has been deleted." }, { status: 400 });
+  }
+  if (!profile || documents.length === 0) {
     return NextResponse.json({ error: "This matter has not finished processing." }, { status: 400 });
   }
   if (matter.status === "blocked") {

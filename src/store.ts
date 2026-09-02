@@ -20,7 +20,9 @@ export type MatterStatus =
   | "ready"
   | "needs_review"
   | "blocked"
-  | "failed";
+  | "failed"
+  /** A tombstone. The content is gone; the record that it existed is not. */
+  | "deleted";
 
 export interface Attestation {
   attestedBy: string;
@@ -46,6 +48,8 @@ export interface MatterMeta {
   sourceNames: string[];
   error?: string;
   processedAt?: string;
+  deletedAt?: string;
+  deletionReason?: string;
 }
 
 export type ArticleStatus = "draft" | "approved" | "rejected";
@@ -77,7 +81,19 @@ export interface GateResult {
 }
 
 const id = (): string => crypto.randomUUID().slice(0, 8);
-const dir = (matterId: string): string => path.join(ROOT, matterId);
+
+/** What a generated id looks like. Anything else did not come from here. */
+const ID = /^[a-z0-9-]{4,64}$/i;
+
+/**
+ * Matter ids arrive from URLs, and one of the things reachable through this
+ * function is a recursive delete. `path.join(ROOT, "../../..")` resolves
+ * happily, so the id is checked rather than trusted.
+ */
+const dir = (matterId: string): string => {
+  if (!ID.test(matterId)) throw new Error("Invalid matter id.");
+  return path.join(ROOT, matterId);
+};
 
 function readJson<T>(p: string): T | null {
   if (!fs.existsSync(p)) return null;
@@ -121,7 +137,9 @@ export function listMatters(): MatterMeta[] {
 }
 
 export const getMatter = (matterId: string): MatterMeta | null =>
-  readJson<MatterMeta>(path.join(dir(matterId), "meta.json"));
+  // A malformed id is a 404, not a 500 — it is a request for something that
+  // cannot exist.
+  ID.test(matterId) ? readJson<MatterMeta>(path.join(dir(matterId), "meta.json")) : null;
 
 export function updateMatter(matterId: string, patch: Partial<MatterMeta>): MatterMeta {
   const current = getMatter(matterId);
@@ -129,6 +147,41 @@ export function updateMatter(matterId: string, patch: Partial<MatterMeta>): Matt
   const next = { ...current, ...patch };
   writeJson(path.join(dir(matterId), "meta.json"), next);
   return next;
+}
+
+/**
+ * Destroys everything derived from the case file and keeps the record that it
+ * existed.
+ *
+ * A delete that removed the matter outright would also remove the attestation —
+ * the named attorney who confirmed the matter was closed, unsealed and cleared.
+ * That record is the firm's protection, and it is most worth having about a
+ * matter that went wrong: an audit wants to see that a corpus which failed its
+ * redaction check was destroyed, not to find a gap where one used to be.
+ *
+ * So the corpus, the profile, the review and every article go, and the
+ * attestation, the reference, the dates and the reason stay. There is no undo.
+ */
+export function deleteMatter(matterId: string, reason: string): MatterMeta {
+  const current = getMatter(matterId);
+  if (!current) throw new Error(`No matter ${matterId}`);
+
+  const base = dir(matterId);
+  for (const folder of ["corpus", "articles"]) {
+    fs.rmSync(path.join(base, folder), { recursive: true, force: true });
+  }
+  for (const file of ["profile.json", "review.json"]) {
+    fs.rmSync(path.join(base, file), { force: true });
+  }
+
+  const tombstone: MatterMeta = {
+    ...current,
+    status: "deleted",
+    deletedAt: new Date().toISOString(),
+    deletionReason: reason,
+  };
+  writeJson(path.join(base, "meta.json"), tombstone);
+  return tombstone;
 }
 
 /* ---------------------------------------------------------------- */

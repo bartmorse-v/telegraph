@@ -55,6 +55,13 @@ Then open **http://localhost:3000**.
    that is not already on the matter's ledger.
 4. **Review and approve.** The publish gate has already run. A blocking failure
    cannot be approved past.
+5. **Delete it, if redaction went wrong.** A corpus that fails its own check is
+   contaminated and should not sit on disk. Deleting destroys the corpus, the
+   profile, the check and every article drawn from it, and keeps the
+   attestation: an audit should be able to see that a matter was destroyed
+   rather than find a gap where one used to be. Confirming means retyping the
+   reference, and the server checks it again. There is no undo, and the source
+   PDFs are already gone, so re-creating a matter means uploading it again.
 
 One folder per matter. Pointing it at a folder holding *all* matters produces
 one incoherent case out of many.
@@ -194,5 +201,9 @@ The article is protected by the gate.
   client's actual areas.
 - **No per-firm voice.** Every article comes out in the same register. Firms
   will want their own.
+- **A deletion does not record who did it.** There is no sign-in, so there is no
+  identity to record, and inventing one would be worse than the gap. The
+  attestation names an attorney because a person typed their name; a deletion
+  cannot honestly claim the same.
 - **Ethics counsel has not reviewed this.** Worth doing before a paying client,
   along with a DPA and a subprocessor list.

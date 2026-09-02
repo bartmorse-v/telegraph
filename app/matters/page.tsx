@@ -12,6 +12,7 @@ const STATUS: Record<MatterMeta["status"], [string, string]> = {
   needs_review: ["pill-warn", "needs review"],
   blocked: ["pill-crit", "blocked"],
   failed: ["pill-crit", "failed"],
+  deleted: ["pill-muted", "deleted"],
 };
 
 export default function Matters() {
@@ -66,7 +67,15 @@ export default function Matters() {
                   href={`/matters/${m.id}`}
                   style={{ gridTemplateColumns: "1fr 110px 120px 110px" }}
                 >
-                  <div style={{ fontWeight: 500 }}>{m.reference}</div>
+                  <div
+                    style={{
+                      fontWeight: 500,
+                      color: m.status === "deleted" ? "var(--faint)" : undefined,
+                      textDecoration: m.status === "deleted" ? "line-through" : undefined,
+                    }}
+                  >
+                    {m.reference}
+                  </div>
                   <div className="mono" style={{ fontSize: 13, color: "var(--muted)" }}>
                     {m.sourceCount}
                   </div>

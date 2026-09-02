@@ -4,7 +4,7 @@ import { createClient, explainError } from "./client";
 import { redactCorpus, scanForPatterns, corpusText } from "./redact";
 import { buildProfile } from "./extract";
 import { reviewCorpus } from "./scrub";
-import { saveCorpus, saveProfile, saveReview, updateMatter } from "./store";
+import { getMatter, saveCorpus, saveProfile, saveReview, updateMatter } from "./store";
 
 /**
  * Runs a matter through redaction, profiling and review, then deletes the
@@ -18,6 +18,15 @@ import { saveCorpus, saveProfile, saveReview, updateMatter } from "./store";
 export async function processMatter(matterId: string, sourceDir: string): Promise<void> {
   const client = createClient();
 
+  /**
+   * A matter can be deleted while this is still running, and deletion is how a
+   * contaminated corpus gets destroyed. Writing one back into a tombstone
+   * afterwards would restore exactly what the deletion was for, so every write
+   * checks first. Abandoning also stops a long redaction paying for work nobody
+   * will read.
+   */
+  const abandoned = (): boolean => getMatter(matterId)?.status === "deleted";
+
   try {
     updateMatter(matterId, { status: "processing" });
 
@@ -30,6 +39,7 @@ export async function processMatter(matterId: string, sourceDir: string): Promis
     if (files.length === 0) throw new Error("No PDFs found in the upload.");
 
     const { documents } = await redactCorpus(client, files, () => {});
+    if (abandoned()) return;
     saveCorpus(matterId, documents);
 
     // Free and instant. A pass that plainly did not happen is caught here
@@ -40,6 +50,7 @@ export async function processMatter(matterId: string, sourceDir: string): Promis
       buildProfile(client, documents),
       reviewCorpus(client, documents),
     ]);
+    if (abandoned()) return;
     saveProfile(matterId, profile);
 
     // The local scan can only add doubt, never remove it: a clean regex sweep
@@ -66,6 +77,7 @@ export async function processMatter(matterId: string, sourceDir: string): Promis
       processedAt: new Date().toISOString(),
     });
   } catch (err) {
+    if (abandoned()) return;
     updateMatter(matterId, {
       status: "failed",
       // Through the same translator the CLI uses, so a missing key reads as

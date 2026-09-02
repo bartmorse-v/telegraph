@@ -8,7 +8,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   const drafts = allArticles().filter((a) => a.status === "draft");
-  const matters = listMatters();
+  // Tombstones are records, not work. Nothing about a deleted matter is
+  // waiting on anyone.
+  const matters = listMatters().filter((m) => m.status !== "deleted");
   // "failed" belongs here too: a matter that errored is exactly the thing
   // nobody finds out about unless the home screen says so.
   const attention = matters.filter(
