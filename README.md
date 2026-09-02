@@ -122,8 +122,18 @@ Redaction runs at medium effort: substitution is careful work but not hard
 reasoning, and leaving thinking room to the output is what keeps a long document
 from being cut off mid-sentence.
 
-No token-to-value mapping is stored anywhere. `[CLIENT]` is consistent within a
-document so it reads coherently, but there is no key back to a real name —
+**The cast carries across page ranges.** Each range reports which tokens it used
+and the part each one plays — "the treating physician", "the defendant's
+insurer" — and the next range is given that list and told to reuse it. Ranges
+therefore run in order rather than at once. Without that, every range numbers its
+witnesses from one, and stitching them back together merges people who were never
+the same person; an article written from that reads as confidently wrong. Whole
+documents still run concurrently, which is where the parallelism that matters
+comes from.
+
+No token-to-value mapping is stored anywhere. `[CLIENT]` is consistent across a
+whole document so it reads coherently, and the cast records the *part* a token
+plays — never a name. There is no key back to a real identity, because
 persisting one would build exactly the re-identification database this design
 exists to avoid.
 
@@ -163,14 +173,14 @@ The article is protected by the gate.
 
 ## Open decisions
 
-- **The angle ledger is not built.** Choosing the next angle against a record of
-  what has already been published from a matter is the next piece. It replaces
-  predicting angles up front, which does not work.
-- **The publish-time gate is not built.** The re-identification check on a
-  finished article, which is where that question belongs.
+- **Nothing publishes anywhere yet.** Approved articles sit in `data/`. Pushing
+  them into a firm's own Sanity dataset is the next piece.
+- **`data/` is a filesystem, not a store.** It works because everything runs on
+  one machine. Serving more than one firm needs a real home for the corpus:
+  encrypted, per-tenant, access-logged.
 - **Practice-area enum** spans common firm types. Narrow it to the first
   client's actual areas.
-- **`out/` is not a store.** The corpus needs a real home: encrypted,
-  per-tenant, access-logged, kept indefinitely.
-- **The attestation gate is not built.** No matter should reach this tool before
-  the firm has attested it is closed, unsealed, and cleared.
+- **No per-firm voice.** Every article comes out in the same register. Firms
+  will want their own.
+- **Ethics counsel has not reviewed this.** Worth doing before a paying client,
+  along with a DPA and a subprocessor list.

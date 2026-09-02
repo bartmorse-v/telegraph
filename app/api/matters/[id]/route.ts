@@ -24,6 +24,9 @@ export async function GET(_: Request, { params }: { params: Promise<{ id: string
       type: d.document_type,
       words: d.content.trim().split(/\s+/).filter(Boolean).length,
       illegible: d.illegible_sections.length,
+      // Generic parts, never names — this is what makes a stitched long
+      // document checkable by eye.
+      cast: d.cast ?? [],
     })),
   });
 }

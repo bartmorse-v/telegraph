@@ -13,7 +13,13 @@ interface Detail {
   profile: MatterProfile | null;
   review: CorpusReview | null;
   articles: Article[];
-  documents: Array<{ index: number; type: string; words: number; illegible: number }>;
+  documents: Array<{
+    index: number;
+    type: string;
+    words: number;
+    illegible: number;
+    cast: Array<{ token: string; role: string }>;
+  }>;
 }
 
 export default function MatterPage() {
@@ -194,7 +200,11 @@ export default function MatterPage() {
             </h2>
             <div className="panel">
               {documents.map((d) => (
-                <div key={d.index} className="row" style={{ gridTemplateColumns: "40px 1fr 120px" }}>
+                <div
+                  key={d.index}
+                  className="row"
+                  style={{ gridTemplateColumns: "40px 1fr 120px", alignItems: "start" }}
+                >
                   <div className="mono" style={{ fontSize: 12, color: "var(--faint)" }}>
                     {String(d.index).padStart(2, "0")}
                   </div>
@@ -203,6 +213,21 @@ export default function MatterPage() {
                     {d.illegible > 0 ? (
                       <div style={{ fontSize: 12.5, color: "var(--warn)" }}>
                         {d.illegible} illegible section{d.illegible === 1 ? "" : "s"}
+                      </div>
+                    ) : null}
+                    {/* The cast is generic parts, never names. It is here so a
+                        long document stitched from page ranges can be checked
+                        by eye: one token should mean one person throughout. */}
+                    {d.cast.length ? (
+                      <div style={{ marginTop: 8, display: "grid", gap: 2 }}>
+                        {d.cast.map((c) => (
+                          <div key={c.token} style={{ fontSize: 12.5, color: "var(--muted)" }}>
+                            <span className="mono" style={{ color: "var(--faint)" }}>
+                              {c.token}
+                            </span>{" "}
+                            {c.role}
+                          </div>
+                        ))}
                       </div>
                     ) : null}
                   </div>

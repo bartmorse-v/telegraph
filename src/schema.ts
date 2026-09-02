@@ -18,8 +18,32 @@ import { z } from "zod";
 /* Redacted document — one per source file                             */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Who a token stands for, in generic terms.
+ *
+ * This is what keeps a long document coherent. A filing too long to redact in
+ * one pass is cut into page ranges, and without carrying the cast forward each
+ * range starts numbering from scratch — [WITNESS_1] on page 40 becomes a
+ * different person than [WITNESS_1] on page 10, and an article written from the
+ * stitched result describes two people as one.
+ *
+ * The role is deliberately a description of a part in the matter, never a name.
+ * A mapping from token back to a real identity is precisely the
+ * re-identification key this design exists not to hold.
+ */
+export const CastEntrySchema = z.object({
+  token: z.string().describe("The token as it appears in the content, e.g. [WITNESS_1]."),
+  role: z
+    .string()
+    .describe(
+      "What part this token plays, generically: 'the treating physician', 'the defendant driver's insurer'. Never a real name, and never a detail that would identify anyone.",
+    ),
+});
+
+export type CastEntry = z.infer<typeof CastEntrySchema>;
+
 export const RedactedDocumentSchema = z.object({
-  schema_version: z.literal("1.0"),
+  schema_version: z.literal("2.0"),
   document_type: z
     .string()
     .describe(
@@ -30,9 +54,9 @@ export const RedactedDocumentSchema = z.object({
     .describe(
       "The document reproduced with identifiers replaced by tokens and nothing else changed. Not a summary.",
     ),
-  tokens_used: z
-    .array(z.string())
-    .describe("Which redaction tokens appear, so the substitution can be audited."),
+  cast: z
+    .array(CastEntrySchema)
+    .describe("Every token used here and the part it plays, so later page ranges can reuse it."),
   illegible_sections: z
     .array(z.string())
     .describe("Anything unreadable, described by location rather than guessed at."),

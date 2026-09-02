@@ -63,8 +63,17 @@ export async function writeArticle(
   ledger: Array<{ angleId: string; headline: string }>,
   steer?: string,
 ): Promise<WriteResult> {
+  // The cast travels with each document. Without it the writer has to infer
+  // from context who [WITNESS_2] is, and an article that guesses wrong reads
+  // as confidently mistaken rather than vague. Corpora redacted before the
+  // cast existed simply have none, and still write fine.
   const corpus = documents
-    .map((d, i) => `## Document ${i + 1} — ${d.document_type}\n\n${d.content}`)
+    .map((d, i) => {
+      const cast = (d.cast ?? []).map((c) => `${c.token} — ${c.role}`).join("\n");
+      return `## Document ${i + 1} — ${d.document_type}\n\n${
+        cast ? `Who the tokens stand for:\n${cast}\n\n` : ""
+      }${d.content}`;
+    })
     .join("\n\n");
 
   const ledgerText =
