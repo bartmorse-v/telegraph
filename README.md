@@ -122,17 +122,29 @@ Redaction runs at medium effort: substitution is careful work but not hard
 reasoning, and leaving thinking room to the output is what keeps a long document
 from being cut off mid-sentence.
 
-**The cast carries across page ranges.** Each range reports which tokens it used
-and the part each one plays — "the treating physician", "the defendant's
-insurer" — and the next range is given that list and told to reuse it. Ranges
-therefore run in order rather than at once. Without that, every range numbers its
-witnesses from one, and stitching them back together merges people who were never
-the same person; an article written from that reads as confidently wrong. Whole
-documents still run concurrently, which is where the parallelism that matters
-comes from.
+**The cast carries across the whole matter.** Each piece reports which tokens it
+used and the part each one plays — "the plaintiff, a minority shareholder", "the
+defendant's accounting firm" — and the next piece is given that list and told to
+reuse it. Pieces therefore run in order rather than at once: page ranges within a
+document, and documents within a matter. Without that, every piece numbers its
+own witnesses and companies from one, and the stitched corpus merges people who
+were never the same person. On a real matter that produced a corpus where one
+company token was the agency in the first filing, the holding company in the
+third and the accounting firm in the fourth.
 
-No token-to-value mapping is stored anywhere. `[CLIENT]` is consistent across a
-whole document so it reads coherently, and the cast records the *part* a token
+Parties are numbered by order of appearance — `[PARTY_1]`, `[PARTY_2]` — rather
+than labelled client and opposing party. Which side the firm acts for is not
+knowable from a single filing, and asking for that judgment is what made the
+labels swap places two-thirds of the way through a document.
+
+**Defined short forms are the failure mode to watch.** A pleading writes
+`Jane Smith ("Smith")` once and then says `Smith` four hundred times. Replacing
+the introduction and keeping the nickname leaves the name in the corpus on
+nearly every page, which is exactly what happened on the first real matter run
+through this. The prompt calls it out and the local scan greps for it.
+
+No token-to-value mapping is stored anywhere. `[PARTY_1]` is consistent across a
+whole matter so it reads coherently, and the cast records the *part* a token
 plays — never a name. There is no key back to a real identity, because
 persisting one would build exactly the re-identification database this design
 exists to avoid.

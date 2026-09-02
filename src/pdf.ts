@@ -40,27 +40,3 @@ export async function splitIntoChunks(bytes: Uint8Array): Promise<Uint8Array[]> 
   }
   return chunks;
 }
-
-/**
- * Runs tasks with a ceiling on how many are in flight.
- *
- * A matter of twenty documents split into chunks is a lot of simultaneous
- * large requests; unbounded concurrency turns a slow job into a rate-limited
- * one.
- */
-export async function pool<T>(limit: number, tasks: Array<() => Promise<T>>): Promise<T[]> {
-  const results = new Array<T>(tasks.length);
-  let next = 0;
-
-  async function worker(): Promise<void> {
-    while (next < tasks.length) {
-      const index = next;
-      next += 1;
-      const task = tasks[index];
-      if (task) results[index] = await task();
-    }
-  }
-
-  await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, worker));
-  return results;
-}

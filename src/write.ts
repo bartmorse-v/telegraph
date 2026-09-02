@@ -42,7 +42,8 @@ The value is the specific thing this matter teaches. "Statutes of limitation are
 Write from what the documents show. Where they show something surprising or counterintuitive, that is your best material.
 
 HARD RULES
-- No identifiers, ever. The corpus is tokenized; write around the tokens in ordinary language ("the driver", "the insurer"), never reproduce a token like [CLIENT] in the article.
+- No identifiers, ever. The corpus is tokenized; write around the tokens in ordinary language ("the driver", "the insurer"), never reproduce a token like [PARTY_1] in the article.
+- If a real name, surname, acronym or exact ownership percentage has survived in the corpus, do not repeat it and do not build a point around it. Redaction is not assumed to be perfect, and you are the last reader who can see the difference.
 - No outcome claims, no promises, no superlatives about the firm. This is educational content, not advertising.
 - No dollar figures.
 - Informational register throughout. Explain how things work; never instruct this reader on what to do in their own matter.
