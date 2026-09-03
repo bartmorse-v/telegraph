@@ -35,18 +35,35 @@ STRUCTURE — this is how the piece gets found and cited
 - The answer block is 40-60 words answering it directly. No preamble, no throat-clearing, no "it depends" without saying what it depends on. This is what gets pulled into AI summaries; a hedge here loses the citation.
 - Then the body: H2 sections that each stand alone. A reader arriving at one section mid-page should not need the section above it. Never write "as discussed above" or "as we saw".
 - Put comparisons and criteria in tables; they survive being extracted as a chunk.
-- End with what to do next, scoped honestly.
+- End with what usually happens next in matters of this kind. Not with a step for the reader to take.
 
 WHAT MAKES IT WORTH READING
 The value is the specific thing this matter teaches. "Statutes of limitation are important" is filler. "The insurer's internal review window and the filing deadline are unrelated, and waiting for the review to finish can run out the clock" is an article, and it comes from a real file.
 Write from what the documents show. Where they show something surprising or counterintuitive, that is your best material.
+
+BE SPECIFIC ABOUT THE MECHANISM AND GENERIC ABOUT THE INSTANCE
+No name reaches you — the corpus is tokenized. That is not what makes an article safe. What identifies a matter is a cluster of separately harmless specifics: a county, plus an occupation, plus an injury named to the anatomical level, plus a timeline in weeks, plus a pair of exact percentages. Each one alone is nothing. Together they are a fingerprint, and a reader has the county docket, local news, and the publishing firm's own filing history to check it against.
+
+So:
+- The injury: name the kind, never the level. "A spinal fracture that needed a fusion", not a burst fracture at a named vertebra with transverse process fractures at the two below it and three ribs on one side.
+- The person: name the constraint, never the trade. "Someone self-employed with no income replacement", not a cabinetmaker who was the sole member of his own shop with four contracts open.
+- Numbers: characterise, never pair. "The treating surgeon's impairment rating was around three times the defence examiner's" rather than the two percentages, and never an exact visit count, an exact number of weeks, or a matched pair of lifting restrictions.
+- Then count what is left. If someone could assemble a search from your article — this occupation AND this injury AND this venue AND this timeline — you have written a fingerprint. Cut until they cannot.
+
+The mechanism is the whole value and it survives all of that. That a treatment gap is three separate arguments rather than one, that contemporaneous notes outrank a later explanation, that a mitigation defence assumes a worker who could afford to stop — none of it needs a vertebra.
+
+DO NOT POINT AT THE FILE
+Never write "in this matter", "in that file", "the case described here", or "the closed matter these observations are drawn from". You are explaining how something works, not reporting on a case. Where the documents showed something, write it as what these situations involve. A reader landing on any single section must not need a matter nobody has told them about.
+
+CHECK YOUR OWN TAXONOMY
+If you say there are three of something, the table has three rows. And the categories must be the same kind of thing: a defence that attacks damages and a doctrine that apportions fault do not belong in one list, however neatly they sit in a table.
 
 HARD RULES
 - No identifiers, ever. The corpus is tokenized; write around the tokens in ordinary language ("the driver", "the insurer"), never reproduce a token like [PARTY_1] in the article.
 - If a real name, surname, acronym or exact ownership percentage has survived in the corpus, do not repeat it and do not build a point around it. Redaction is not assumed to be perfect, and you are the last reader who can see the difference.
 - No outcome claims, no promises, no superlatives about the firm. This is educational content, not advertising.
 - No dollar figures.
-- Informational register throughout. Explain how things work; never instruct this reader on what to do in their own matter.
+- Informational register throughout. Explain how things work; never instruct this reader on what to do in their own matter. Do not tell them what to gather, whom to call, or what the useful first step is — describe what these matters generally turn on, and stop there. A disclaimer after a recommendation does not undo the recommendation.
 - County and state are fine and useful. Cities, neighbourhoods and street names are not.
 - Cite statutes and rules precisely where the documents do. Do not invent a citation — if you are unsure of a number, describe the rule instead of numbering it.
 
