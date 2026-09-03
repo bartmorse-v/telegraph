@@ -1,6 +1,6 @@
 /**
- *   npm run score -- <matter-id>
- *   npm run score -- <matter-id> --key samples/synthetic-pi-milwaukee/answers.json
+ *   npm run score                     (grades the most recent matter)
+ *   npm run score -- <matter-id>      (grades a particular one)
  *
  * Grades a redacted corpus against the answer key of the synthetic matter it
  * came from. Every planted identifier is either in the corpus or it is not, and
@@ -13,15 +13,39 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const [, , matterId, ...rest] = process.argv;
+const [, , first] = process.argv;
 const flag = (name, fallback) => {
-  const i = rest.indexOf(`--${name}`);
-  return i === -1 ? fallback : rest[i + 1];
+  const i = process.argv.indexOf(`--${name}`);
+  return i === -1 ? fallback : process.argv[i + 1];
 };
 
+const MATTERS = path.join("data", "matters");
+
+/**
+ * With no id, grade the newest matter. Finding an eight-character id in a
+ * browser address bar and retyping it is a step that adds nothing, and there is
+ * almost never a second matter you meant instead.
+ */
+function newestMatter() {
+  if (!fs.existsSync(MATTERS)) return null;
+  const candidates = fs
+    .readdirSync(MATTERS)
+    .filter((d) => fs.existsSync(path.join(MATTERS, d, "corpus")))
+    .map((d) => ({ id: d, at: fs.statSync(path.join(MATTERS, d)).mtimeMs }))
+    .sort((a, b) => b.at - a.at);
+  return candidates[0]?.id ?? null;
+}
+
+const matterId = first && !first.startsWith("--") ? first : newestMatter();
+
 if (!matterId) {
-  console.error("usage: npm run score -- <matter-id> [--key <answers.json>]");
+  console.error(
+    "No processed matter found under data/matters/. Add one through the app first, or name it: npm run score -- <matter-id>",
+  );
   process.exit(2);
+}
+if (!first || first.startsWith("--")) {
+  console.log(`Grading the most recent matter, ${matterId}.`);
 }
 
 const keyPath = flag("key", path.join("samples", "synthetic-pi-milwaukee", "answers.json"));
