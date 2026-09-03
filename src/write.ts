@@ -35,7 +35,7 @@ STRUCTURE — this is how the piece gets found and cited
 - The answer block is 40-60 words answering it directly. No preamble, no throat-clearing, no "it depends" without saying what it depends on. This is what gets pulled into AI summaries; a hedge here loses the citation.
 - Then the body: H2 sections that each stand alone. A reader arriving at one section mid-page should not need the section above it. Never write "as discussed above" or "as we saw".
 - Put comparisons and criteria in tables; they survive being extracted as a chunk.
-- End with what usually happens next in matters of this kind. Not with a step for the reader to take.
+- End with how matters of this kind typically conclude — written about the process, never about the reader's own case. "Cases like this usually settle at mediation" is fine; "what happens next in your case" is not, and neither is a step for the reader to take.
 
 WHAT MAKES IT WORTH READING
 The value is the specific thing this matter teaches. "Statutes of limitation are important" is filler. "The insurer's internal review window and the filing deadline are unrelated, and waiting for the review to finish can run out the clock" is an article, and it comes from a real file.
@@ -63,7 +63,9 @@ HARD RULES
 - If a real name, surname, acronym or exact ownership percentage has survived in the corpus, do not repeat it and do not build a point around it. Redaction is not assumed to be perfect, and you are the last reader who can see the difference.
 - No outcome claims, no promises, no superlatives about the firm. This is educational content, not advertising.
 - No dollar figures.
-- Informational register throughout. Explain how things work; never instruct this reader on what to do in their own matter. Do not tell them what to gather, whom to call, or what the useful first step is — describe what these matters generally turn on, and stop there. A disclaimer after a recommendation does not undo the recommendation.
+- Informational register throughout. Second person is fine for explaining how something works — "your own policy pays the difference" — and never for recommending: no "you should", no "it is worth knowing", no "the sequencing matters more than the paperwork", no step to take, nobody to call, nothing to gather. A disclaimer after a recommendation does not undo the recommendation.
+- Never assume a fact about the reader. A heading like "A claim involving a business you own" tells someone who owns no business that this is not for them, and tells the one who does that you know something about them. Write "where the injured person is self-employed".
+- Never gender the reader or an unnamed subject. "Their own lost income", not "his".
 - County and state are fine and useful. Cities, neighbourhoods and street names are not.
 - Cite statutes and rules precisely where the documents do. Do not invent a citation — if you are unsure of a number, describe the rule instead of numbering it.
 
@@ -163,7 +165,11 @@ const GATE_SYSTEM = `You are the last check before a law firm publishes an artic
 
 Run these six checks and report each one.
 
-re_identification — Could a motivated reader work out which specific client or matter this is about? Assume they have public court dockets, local news, and social media, and know which firm published it. Watch for combinations: a county plus a timeframe plus an unusual detail identifies someone even when each part is harmless alone. This is the check that matters most. Severity "block" if yes.
+re_identification — Could a motivated reader work out which specific client or matter this is about? Assume they have public court dockets, local news, and social media, and know which firm published it. Watch for combinations: a venue plus a timeframe plus an unusual detail identifies someone even when each part is harmless alone. This is the check that matters most. Severity "block" if yes.
+
+  Every element you rely on must be quoted from the article, in the words the article uses. If you cannot quote it, it is not in the article and it does not count. Do not import anything from the jurisdiction header, from what a matter of this kind usually involves, or from your own sense of what the underlying file probably said — a block resting on a detail the reader cannot see is a false block, and there is no way to approve past one.
+
+  Quoting the article here is correct and expected. It is already de-identified and about to be published; that is different from the corpus, which you never see.
 
 jurisdictional_accuracy — Are the statutes, deadlines, and procedures correct for the jurisdiction named? A wrong limitations period published under an attorney's byline is the single most damaging error possible here. If a citation looks wrong or you cannot verify it, fail this check and say which one. Severity "block" if a legal rule is stated incorrectly.
 
@@ -196,7 +202,12 @@ export async function runPublishGate(
         content: [
           {
             type: "text",
-            text: `Jurisdiction claimed: ${jurisdiction}\n\n# ${draft.headline}\n\n${draft.answer_block}\n\n${draft.body}`,
+            // The jurisdiction is given so statutes can be checked against the
+            // right state. It is deliberately fenced off from the article: it
+            // blocked a piece once for naming a county the article never
+            // mentioned, which is the reader's-eye-view failing in the one
+            // check that exists to hold it.
+            text: `[Context for the jurisdictional check only. The following line is NOT in the article and a reader never sees it. Do not treat it as a detail the article discloses.]\nJurisdiction of the underlying matter: ${jurisdiction}\n[End of context. The article begins below.]\n\n# ${draft.headline}\n\n${draft.answer_block}\n\n${draft.body}`,
           },
         ],
       },
