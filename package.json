@@ -10,7 +10,9 @@
     "start": "next start",
     "setup": "node scripts/setup.mjs",
     "extract": "tsx src/cli.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "synthesize": "node scripts/synthesize.mjs",
+    "score": "node scripts/score.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.122.0",

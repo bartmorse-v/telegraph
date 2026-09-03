@@ -87,6 +87,47 @@ API returns a 400. `npm run setup` asks for the id; find it in the Console
 address bar — `platform.claude.com/workspaces/<THIS PART>/...`. Keys that are
 not identity-linked ignore it, so setting it is harmless either way.
 
+## A matter with a known answer
+
+Two real matters have gone through this and neither could answer the question
+that matters. A business dispute in one county is identifiable however well the
+redaction works, and neither file contained a result worth writing about. More
+importantly, a real matter can only be graded by asking a model whether the
+redaction looked thorough, and a model will answer confidently either way.
+
+`npm run synthesize` writes an invented closed personal injury matter — six
+documents, a Milwaukee County collision that settles — together with the list of
+every identifier planted in it.
+
+```bash
+npm run synthesize                 # six PDFs into samples/synthetic-pi-milwaukee/
+npm run synthesize -- --visits 200 # long enough to be split into page ranges
+```
+
+Upload the PDFs as one matter, then grade the result against the key:
+
+```bash
+npm run score -- <matter-id>       # the id in the browser address bar
+```
+
+Eighty strings went in. The scorer says how many came out, by severity, and it
+looks in the cast as well as the content — a role that names the person it
+stands for is a leak like any other. Exit code `0` only if none survived.
+
+It checks the other direction too. A pass that deleted every document would
+score perfectly on identifiers and be worthless, so ten load-bearing legal facts
+are counted as well: the statutes, the doctrines, the county. Identifiers gone
+**and** facts kept is the only result that counts.
+
+The file is written the way the real thing is written, because that is what
+makes the test worth running: parties introduced as `Full Name ("Surname")` and
+then called by the surname, Bates stamps in the footers, contact details in the
+signature blocks, an acronym built from a party's name.
+
+The people, companies and events are invented, and the law in them is
+illustrative rather than checked. **Nothing written from this file may be
+published.**
+
 ## Working with real case files
 
 Real closed matters are better test material than synthetic ones, provided the firm has authorized this use. Three rules:
