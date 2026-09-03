@@ -167,9 +167,19 @@ fs.writeFileSync(
   )}\n`,
 );
 
+// The absolute path, and the command that reveals it. A relative path is only
+// useful to someone already standing in the right directory, and the upload
+// dialog is not.
+const absolute = path.resolve(outDir);
+const reveal =
+  process.platform === "darwin" ? "open" : process.platform === "win32" ? "explorer" : "xdg-open";
+
 console.log(
-  `\n${documents.length} documents · ${pages} pages · ${key.length} planted identifiers`,
+  `\n${documents.length} documents · ${pages} pages · ${key.length} planted identifiers\n`,
 );
-console.log(`Written to ${outDir}/`);
-console.log(`\nUpload the PDFs as one matter, reference it SYNTHETIC-001, then:`);
+console.log(`  ${absolute}`);
+console.log(`\nTo open that folder:\n  ${reveal} "${absolute}"`);
+console.log(
+  `\nUpload all ${documents.length} PDFs as one matter, reference it SYNTHETIC-001, then:`,
+);
 console.log(`  npm run score -- <matter-id>`);
