@@ -21,6 +21,10 @@ const REVIEW_SYSTEM = `You are checking whether a redaction pass over legal docu
 
 You are looking for identifiers that survived substitution: a person or company named where a token should be, an address, a specific date, a dollar figure, a docket or account number, a phone number or email.
 
+Look first for a recorded mapping — a key, legend, glossary or redaction note that shows what a token replaced, in any form: "1234567890 -> [CASE_NUMBER]", "[PARTY_1] (formerly Jane Smith)", a table pairing tokens with originals. That is always high severity, however brief and wherever it sits, because one such line reverses the redaction everywhere that token appears and the documents share their tokens. It is the single worst thing that can be in here.
+
+Watch for names carried through as defined short forms. A document that introduces a party once and then uses a surname, an acronym, or an initialism as shorthand has leaked that name onto every page that follows, even though the introduction was replaced.
+
 Do NOT flag:
 - County, state, or court level — these are kept deliberately
 - Statutes, rules, regulations, published case citations
@@ -30,7 +34,7 @@ Do NOT flag:
 
 Describe what you find; never quote it. Say "a company name appears in the jurisdiction section" rather than reproducing the name — this report has to remain shareable when the documents are not.
 
-Also judge substitution quality: were tokens used consistently within a document, and was anything summarized that should have been reproduced in full? A redaction pass that quietly condensed the document has failed even if no identifier survived.
+Also judge substitution quality: were tokens used consistently within a document AND across the set — one token meaning one person or company throughout — and was anything summarized that should have been reproduced in full? A pass that quietly condensed the documents has failed even if no identifier survived. Note that only certificates of service, signature blocks, tables of authorities and repeated caption headers may be compressed; a section replaced by a note saying it matches an earlier one has been lost.
 
 Verdict: "blocked" if any high-severity identifier survived, "needs_review" for medium or low only, "clean" if substitution held throughout.`;
 

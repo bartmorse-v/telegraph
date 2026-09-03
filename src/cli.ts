@@ -85,7 +85,15 @@ async function main(): Promise<number> {
   );
   if (!scan.clean) {
     console.log(`  pattern scan found:`);
-    for (const h of scan.hits) console.log(`    ${String(h.count).padStart(4)}  ${h.kind}`);
+    for (const h of scan.hits) {
+      console.log(`    ${String(h.count).padStart(4)}  ${h.kind}${h.blocks ? "  ← blocks" : ""}`);
+    }
+  }
+  if (scan.disqualified) {
+    console.log(
+      `  The corpus records what a token replaced. That reverses the redaction\n` +
+        `  wherever the token appears — discard this run and redact again.`,
+    );
   }
 
   console.log("Profiling   (index card over the corpus)");
@@ -111,7 +119,9 @@ async function main(): Promise<number> {
   console.log(`Corpus in   ${outDir}/corpus/`);
   console.log(`Report      ${outDir}/report.md`);
 
-  if (review.verdict === "blocked") return EXIT.blocked;
+  // A recorded mapping outranks the reviewer's verdict, for the same reason it
+  // does in the app: the corpus carries its own decoder ring.
+  if (scan.disqualified || review.verdict === "blocked") return EXIT.blocked;
   if (review.verdict === "needs_review") return EXIT.needsReview;
   return EXIT.clean;
 }

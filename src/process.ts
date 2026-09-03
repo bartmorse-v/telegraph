@@ -55,14 +55,23 @@ export async function processMatter(matterId: string, sourceDir: string): Promis
 
     // The local scan can only add doubt, never remove it: a clean regex sweep
     // says nothing about names it has no pattern for.
-    const merged =
-      !scan.clean && review.verdict === "clean"
+    //
+    // One class of hit overrides the reviewer outright. A corpus that writes
+    // down what a token replaced carries its own decoder ring, and one such
+    // line unlocks every document sharing that token — there is no reading of
+    // the rest that makes it publishable.
+    const noted = scan.hits.map((h) => `${h.count} ${h.kind}`).join(", ");
+    const merged = scan.disqualified
+      ? {
+          ...review,
+          verdict: "blocked" as const,
+          substitution_quality: `${review.substitution_quality}\n\nBlocked by the local scan: ${noted}. The corpus records what a token replaced, which reverses the redaction wherever that token appears. Delete this matter and process it again.`,
+        }
+      : !scan.clean && review.verdict === "clean"
         ? {
             ...review,
             verdict: "needs_review" as const,
-            substitution_quality: `${review.substitution_quality}\n\nPattern scan also matched: ${scan.hits
-              .map((h) => `${h.count} ${h.kind}`)
-              .join(", ")}.`,
+            substitution_quality: `${review.substitution_quality}\n\nPattern scan also matched: ${noted}.`,
           }
         : review;
     saveReview(matterId, merged);
