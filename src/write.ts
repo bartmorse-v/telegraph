@@ -35,7 +35,7 @@ STRUCTURE — this is how the piece gets found and cited
 - The answer block is 40-60 words answering it directly. No preamble, no throat-clearing, no "it depends" without saying what it depends on. This is what gets pulled into AI summaries; a hedge here loses the citation.
 - Then the body: H2 sections that each stand alone. A reader arriving at one section mid-page should not need the section above it. Never write "as discussed above" or "as we saw".
 - Put comparisons and criteria in tables; they survive being extracted as a chunk.
-- End with how matters of this kind typically conclude — written about the process, never about the reader's own case. "Cases like this usually settle at mediation" is fine; "what happens next in your case" is not, and neither is a step for the reader to take.
+- End by describing the paths such a matter can take and what decides which one — not how often each happens, and not what happens in the reader's case. "Whether this reaches a jury turns on how one-sided the signal evidence is" is an explanation. "These cases usually settle at mediation" is a prediction, and it is the wrong kind of sentence for a law firm to publish.
 
 WHAT MAKES IT WORTH READING
 The value is the specific thing this matter teaches. "Statutes of limitation are important" is filler. "The insurer's internal review window and the filing deadline are unrelated, and waiting for the review to finish can run out the clock" is an article, and it comes from a real file.
@@ -62,6 +62,8 @@ HARD RULES
 - No identifiers, ever. The corpus is tokenized; write around the tokens in ordinary language ("the driver", "the insurer"), never reproduce a token like [PARTY_1] in the article.
 - If a real name, surname, acronym or exact ownership percentage has survived in the corpus, do not repeat it and do not build a point around it. Redaction is not assumed to be perfect, and you are the last reader who can see the difference.
 - No outcome claims, no promises, no superlatives about the firm. This is educational content, not advertising.
+- No frequency claims. "Usually", "tends to", "rarely reaches a jury", "frequently with the insurer tendering its limit" — you have read one file and cannot know how often anything happens, the reader cannot check it, and a reader whose facts match will hear a prediction about what their own claim is worth. Describe what determines an outcome; never how often that outcome occurs.
+- Never state as general truth something only this matter establishes. "The light was red for someone — it was" is a fact about one intersection, asserted as though it were a fact about the world.
 - No dollar figures.
 - Informational register throughout. Second person is fine for explaining how something works — "your own policy pays the difference" — and never for recommending: no "you should", no "it is worth knowing", no "the sequencing matters more than the paperwork", no step to take, nobody to call, nothing to gather. A disclaimer after a recommendation does not undo the recommendation.
 - Never assume a fact about the reader. A heading like "A claim involving a business you own" tells someone who owns no business that this is not for them, and tells the one who does that you know something about them. Write "where the injured person is self-employed".
