@@ -187,6 +187,27 @@ Verdict: "block" if any check has severity block and failed; "flag" if any warn 
 
 Never quote an identifier you find — describe where it is. This report is read by people who should not learn what you found.`;
 
+/**
+ * Recomputes the overall verdict from the individual checks.
+ *
+ * Disagreement is resolved toward the stricter of the two, and toward the
+ * checks, because they are the evidence and the verdict is a summary of it.
+ */
+function withDerivedVerdict(gate: PublishGate): PublishGate {
+  const failed = gate.checks.filter((c) => !c.passed);
+  const derived: PublishGate["verdict"] = failed.some((c) => c.severity === "block")
+    ? "block"
+    : failed.some((c) => c.severity === "warn")
+      ? "flag"
+      : "pass";
+
+  const RANK = { pass: 0, flag: 1, block: 2 } as const;
+  // Never soften what the model reported, only harden it: a reviewer that says
+  // "block" while every check reads passed is describing something the check
+  // list failed to capture, and that is not a reason to publish.
+  return RANK[gate.verdict] > RANK[derived] ? gate : { ...gate, verdict: derived };
+}
+
 export async function runPublishGate(
   client: Anthropic,
   draft: DraftArticle,
@@ -226,8 +247,16 @@ export async function runPublishGate(
     // Fail closed: an unparseable gate is not a pass.
     throw new Error(`Gate returned nothing parseable (stop_reason: ${response.stop_reason}).`);
   }
+
   return {
-    gate: response.parsed_output,
+    // The verdict is computed from the checks, never taken from the model's own
+    // summary of them. A response saying "pass" beside a failed block-severity
+    // check was believed, which made the one guarantee in this product — that a
+    // blocking failure cannot be approved past — depend on the reviewer also
+    // remembering to set a field correctly. Deriving it makes the guarantee
+    // structural: to reach "approvable" an article must have no failed check
+    // marked blocking, whatever the model wrote in the summary line.
+    gate: withDerivedVerdict(response.parsed_output),
     usage: {
       input_tokens: response.usage.input_tokens,
       output_tokens: response.usage.output_tokens,

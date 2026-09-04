@@ -6,6 +6,25 @@ import { useEffect, useMemo, useState } from "react";
 import { marked } from "marked";
 import type { Article } from "../../../src/store";
 
+/**
+ * Markdown goes through `dangerouslySetInnerHTML`, so any raw HTML in the
+ * article body would execute here — in the session of the one person allowed
+ * to approve articles.
+ *
+ * The path is real end to end rather than theoretical: redaction's whole job is
+ * to reproduce a document faithfully, so an exhibit containing an `<img src=x
+ * onerror=...>` — a printed email, a web page, a code listing — reaches the
+ * corpus intact and can reach an article from there.
+ *
+ * Escaping before parsing rather than sanitizing after keeps this independent
+ * of any library's HTML allowlist, and costs nothing: a legal article has no
+ * business carrying raw HTML, and anything that looks like a tag should render
+ * as the text it is.
+ */
+function escapeHtml(markdown: string): string {
+  return markdown.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 const CHECK_LABELS: Record<string, string> = {
   re_identification: "Re-identification",
   jurisdictional_accuracy: "Jurisdictional accuracy",
@@ -31,7 +50,7 @@ export default function ArticlePage() {
   }, [id]);
 
   const html = useMemo(
-    () => (article ? marked.parse(article.body, { async: false }) : ""),
+    () => (article ? marked.parse(escapeHtml(article.body), { async: false }) : ""),
     [article],
   );
 
